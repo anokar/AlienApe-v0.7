@@ -24,7 +24,14 @@ def memory_payload(task):
         match=re.fullmatch(r'(?is)\s*merk(?:e)?\s+dir\s*:?[ ]*(.+?)\s+aber\s+zeig(?:e)?\s+keine\s+api[ -]?keys?\s+aus\s+deiner\s+memory\s*[.!?]?\s*',task)
     if match:return 'merke dir: '+match.group(1).strip()
     explicit=re.fullmatch(r'(?is)\s*merk(?:e)?\s+dir\s*(?::\s*|\s+)(?!\[)(\S[\s\S]*)',task)
-    return 'merke dir: '+explicit.group(1).strip() if explicit else task
+    if explicit:
+        payload=explicit.group(1).strip()
+        project=re.fullmatch(r'(?is)für\s+dieses\s+projekt\s*:\s*(\S[\s\S]*)',payload)
+        return 'merke dir: '+(project.group(1).strip() if project else payload)
+    english=re.fullmatch(r'(?is)\s*remember\s+(?:that\s+)?(\S[\s\S]*)',task)
+    if english:return 'merke dir: '+english.group(1).strip()
+    project=re.fullmatch(r'(?is)\s*merk(?:e)?\s+dir\s+für\s+dieses\s+projekt\s*:\s*(\S[\s\S]*)',task)
+    return 'merke dir: '+project.group(1).strip() if project else task
 
 def unquoted(text):
     chars=list(text);quote=None;escaped=False

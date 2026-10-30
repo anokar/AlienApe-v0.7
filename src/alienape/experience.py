@@ -175,8 +175,13 @@ class ExperienceStore:
                actual_success_output_tokens=None,resource_retries=None,escalations=None,tool_observation=None,benchmark_task_id=None,benchmark_level=None,benchmark_catalog_version=None,benchmark_run_id=None,capability_v2=None,language_v2=None,protocol_v2=None,protocol_status=None):
         if source in {'community','protocol_probe'}:
             raise ValueError('Community and probe evidence cannot be stored in local Experience.')
-        if protocol_status not in {None,'VERIFIED_SUCCESS','VERIFIED_FAILURE'} or protocol_status is not None and (source!='live' or response_contract!='FILE_CONTENT'):
+        if protocol_status not in {None,'VERIFIED_SUCCESS','VERIFIED_FAILURE'}:
             raise ValueError('Ungültige Protokollevidenz.')
+        if protocol_status is not None:
+            allowed=(source=='live' and response_contract=='FILE_CONTENT') or (source=='benchmark' and response_contract in {'FILE_CONTENT','TOOL_ACTION','STRUCTURED_JSON'})
+            neutral=str(failure_type) in {'RESOURCE_OUTPUT_LIMIT','RESOURCE_CONTEXT_LIMIT','TIMEOUT','INFORMATION_MISSING','PERMISSION_FAILURE'} or information_complete is False or str(signal)=='RESOURCE_FAILURE'
+            if not allowed or neutral:
+                raise ValueError('Ungültige oder nicht zurechenbare Protokollevidenz.')
         signal = SuccessSignal(signal)
         if str(failure_type) in {'RESOURCE_OUTPUT_LIMIT','RESOURCE_CONTEXT_LIMIT'}:
             signal = SuccessSignal.RESOURCE_FAILURE

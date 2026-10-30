@@ -127,6 +127,20 @@ class MemoryStore:
                 db.execute("UPDATE memory SET access_count=access_count+1,last_accessed=? WHERE id=? AND project_id=?", (now(), row["id"], self.project_id))
             return transport_redactor.clean(safe_memory_rows(rows))
 
+    def forget_matching(self, query):
+        """Delete only one active, non-sensitive matching project record, atomically."""
+        terms=[w for w in re.findall(r"[\w-]+",query.casefold()) if len(w)>2 and w not in {'mein','meine','the','about','memory','meineng','meinem'}]
+        if not terms:return 'AMBIGUOUS'
+        with self.connection() as db:
+            db.execute('BEGIN IMMEDIATE')
+            rows=[dict(x) for x in db.execute('SELECT * FROM memory WHERE project_id=? AND active=1 AND superseded=0 ORDER BY id DESC LIMIT 51',(self.project_id,))]
+            if len(rows)>50:return 'AMBIGUOUS'
+            matches=[x for x in rows if not sensitive_memory_row(x) and all(re.search(r'(?<!\w)'+re.escape(w)+r'(?!\w)',(x['logical_key']+' '+x['content']).casefold()) for w in terms)]
+            if not matches:return 'NOT_FOUND'
+            if len(matches)!=1:return 'AMBIGUOUS'
+            result=db.execute('DELETE FROM memory WHERE id=? AND project_id=?',(matches[0]['id'],self.project_id))
+            return 'DELETED' if result.rowcount==1 else 'NOT_FOUND'
+
     def update_flags(self, identifier, *, active=None, important=None):
         with self.connection() as db:
             if active is not None:

@@ -76,6 +76,10 @@ def declared(profile,group):
 
 def plan_for(profile,tasks,scope='quick'):
     scope={'short':'quick','normal':'standard'}.get(scope,scope)
+    if scope=='project_plan':return list(tasks)
+    if scope=='file_transport':
+        required='file_content_python' if profile.tool_mode=='none' else 'native_write_python' if profile.tool_mode=='native' else None
+        return [t for t in tasks if t.validator==required]
     if scope in {'lite','medium','hard'}:
         from .onboarding import plan_v2
         return plan_v2(profile,tasks,scope)
@@ -100,6 +104,22 @@ class TrainingValidator(ResultValidator):
     def validate(self,task,response):
         item=self.task
         if item.validator=='json':return ExactValueValidator(item.expected).validate(task,response)
+        if item.validator=='file_content_python':
+            import ast
+            from .benchmark import check_python
+            proposals=getattr(response,'proposed_files',[])
+            try:
+                okay=len(proposals)==1
+                if okay:ast.parse(proposals[0]['content']);okay=check_python(proposals[0]['content'],item.expected['symbol'])
+            except (SyntaxError,ValueError,ZeroDivisionError,OverflowError):okay=False
+            return ValidationResult(okay,True,True,F.SUCCESS if okay else F.VALIDATION_FAILURE,{},'task_quality')
+        if item.validator=='project_plan':
+            from .project_plan import validate_plan,InvalidProjectPlan
+            try:
+                validate_plan(response.get('content') or '',self.workspace,'benchmark_project',item.prompt)
+                okay=True
+            except (InvalidProjectPlan,ValueError,PermissionError,OSError):okay=False
+            return ValidationResult(okay,True,True,F.SUCCESS if okay else F.VALIDATION_FAILURE,{},'project_plan')
         if item.validator=='unrated':return ValidationResult()
         text=response.get('content') or ''
         if item.validator=='proposal':
@@ -139,8 +159,14 @@ class TrainingRunner:
         self.models=[registry.profiles[i] for i in models if i in registry.profiles and registry.profiles[i].enabled]
         if not self.models or categories==[]:raise ValueError('Mindestens ein Modell und eine Domain wählen.')
         self.scope={'short':'quick','normal':'standard'}.get(scope,scope)
-        if self.scope not in {'quick','standard','lite','medium','hard'}:raise ValueError('Ungültiger Benchmark-Level.')
-        if self.scope in {'lite','medium','hard'}:
+        if self.scope not in {'quick','standard','lite','medium','hard','project_plan','file_transport'}:raise ValueError('Ungültiger Benchmark-Level.')
+        if self.scope=='file_transport':
+            from .onboarding import file_transport_qualification_tasks
+            self.tasks=list(file_transport_qualification_tasks())
+        elif self.scope=='project_plan':
+            from .onboarding import project_plan_qualification_tasks
+            self.tasks=list(project_plan_qualification_tasks())
+        elif self.scope in {'lite','medium','hard'}:
             from .onboarding import catalog_v2
             selected=set(categories or DOMAINS)
             self.tasks=[t for t in catalog_v2() if t.category in selected]
@@ -222,7 +248,18 @@ class TrainingRunner:
                 path=workspace.path(name);path.parent.mkdir(parents=True,exist_ok=True);path.write_text(contents,encoding='utf-8')
             agent=Agent(backend,workspace,self.settings,stopped=self.stopped,validator=TrainingValidator(task,workspace))
             self.active_agent=agent;agent.prepare_task(task.prompt)
-            agent.model_call_limit=min(2,self.settings.agent.max_steps)
+            if task.validator in {'project_plan','file_content_python','native_write_python'}:
+                # A benchmark prompt is not a user request for file mutation.
+                from .contracts import WriteScope
+                agent.intent_resolution=None
+                agent.write_scope=WriteScope()
+                agent.workspace_operation=None
+                # These fixed qualification cases have no input files. A target
+                # named in the prompt is an output, never a required read.
+                agent.required_input_paths=[]
+                if task.validator in {'file_content_python','native_write_python'}:
+                    agent.write_scope=WriteScope(False,[task.expected['target']],True,True)
+            agent.model_call_limit=min(1 if self.scope in {'project_plan','file_transport'} else 2,self.settings.agent.max_steps)
             agent.resources.model=profile.model_name
             agent.response_contract=ResponseContract(M(mode),mode=='STRUCTURED_JSON',
                 required_keys=list(task.expected) if task.validator=='json' and isinstance(task.expected,dict) else [],
@@ -242,8 +279,8 @@ class TrainingRunner:
                     for name,contents in fixtures:
                         data=await agent.execute_tool('read_file',{'path':name},origin='controller')
                         files.append({'path':name,'content':data['content']})
-                schemas=agent.tools.schemas({'read_file','search_files'}) if task.validator=='tool' else None
-                agent.active_tool_names={'read_file','search_files'} if schemas else set()
+                schemas=agent.tools.schemas({'write_file'},write_scope=agent.write_scope) if task.validator=='native_write_python' else agent.tools.schemas({'read_file','search_files'}) if task.validator=='tool' else None
+                agent.active_tool_names={'write_file'} if task.validator=='native_write_python' else {'read_file','search_files'} if schemas else set()
                 packet=TaskPacket(task.prompt,'BENCHMARK',[str(task.category)],relevant_files_or_contents=files,
                     resource_budget={'context_bytes':self.settings.agent.context_budget,'max_model_steps':2,
                                      'max_output_tokens':self.settings.resources.output.default_limit},task_domain=str(task.category),
@@ -251,7 +288,31 @@ class TrainingRunner:
                 messages=packet.messages()
                 response=await agent.call_model(task.prompt,messages,schemas,
                     lambda:backend.chat_with_mode(messages,schemas,profile.model_name,profile.tool_mode),backend=backend,structured_protocol=mode=='FILE_PROPOSAL')
-                if task.validator=='tool':
+                if task.validator=='native_write_python':
+                    from .benchmark import check_python
+                    calls=response.get('tool_calls') or []
+                    requested_tools=len(calls)
+                    if len(calls)!=1:raise CompletionRejected(F.FORMAT_FAILURE,'Expected one native write_file call')
+                    function=calls[0].get('function',{})
+                    try:
+                        args=json.loads(function['arguments']) if isinstance(function.get('arguments'),str) else function['arguments']
+                        if function.get('name')!='write_file':raise ValueError('wrong tool')
+                        agent.tools.validate('write_file',args)
+                        if not agent.write_scope.permits(args['path'],workspace):raise PermissionError('WRITE_SCOPE')
+                    except (KeyError,ValueError,TypeError,PermissionError,ToolArgumentInvalid) as exc:
+                        agent.emit('TOOL_DENIED',{'name':'write_file','subreason':'WRITE_SCOPE_OR_INVALID_ARGUMENTS','dispatch':False})
+                        tool_observation={'selected':True,'write_scope_checked':False,'write_performed':False,'denied':True}
+                        raise CompletionRejected(F.FORMAT_FAILURE,'Invalid or unauthorized tool call') from exc
+                    tool_observation={'selected':True,'name_correct':True,'arguments_correct':True,'permission_allowed':None,'tool_successful':False,'write_scope_checked':True,'write_performed':False}
+                    try:
+                        import ast
+                        ast.parse(args['content'])
+                        okay=check_python(args['content'],task.expected['symbol'])
+                    except (SyntaxError,ValueError,ZeroDivisionError,OverflowError):okay=False
+                    failure=F.SUCCESS if okay else F.VALIDATION_FAILURE
+                    status=S.VERIFIED_SUCCESS if okay else S.VERIFIED_FAILURE
+                    agent.last_failure_type=failure
+                elif task.validator=='tool':
                     calls=response.get('tool_calls') or []
                     requested_tools=len(calls)
                     tool_observation={'selected':bool(calls),'name_correct':False,'arguments_correct':False,
@@ -268,8 +329,9 @@ class TrainingRunner:
                     tool_observation.update(permission_allowed=True,tool_successful=True)
                     agent.last_failure_type=F.SUCCESS
                 elif response.get('tool_calls'):raise CompletionRejected(F.TOOL_FAILURE,'Keine Tools für diesen Antwortvertrag angeboten')
-                failure=agent.last_failure_type
-                status=S.VERIFIED_SUCCESS if task.validator!='unrated' and failure==F.SUCCESS else S.UNKNOWN
+                if task.validator!='native_write_python':
+                    failure=agent.last_failure_type
+                    status=S.VERIFIED_SUCCESS if task.validator!='unrated' and failure==F.SUCCESS else S.UNKNOWN
             except asyncio.CancelledError:raise
             except Exception as exc:
                 error=type(exc).__name__
@@ -280,13 +342,15 @@ class TrainingRunner:
                 elif isinstance(exc,(ToolArgumentInvalid,PermissionError)):failure=F.TOOL_FAILURE if isinstance(exc,ToolArgumentInvalid) else F.PERMISSION_FAILURE
                 elif isinstance(exc,httpx.HTTPError):failure=F.UNKNOWN
                 else:failure=F.FORMAT_FAILURE
+                if task.validator=='native_write_python' and failure in {F.TOOL_FAILURE,F.FORMAT_FAILURE} and agent.last_completion.finish_reason.casefold() in {'length','max_tokens','max_output_tokens','limit'}:
+                    failure=F.RESOURCE_OUTPUT_LIMIT
                 if failure==F.UNKNOWN and agent.last_completion.finish_reason.casefold() in {'length','max_tokens','max_output_tokens','limit'}:
                     # Exact text can be wrong without proving how much more output is needed.
                     # Do not turn a clipped plain response into negative subject competence.
                     failure=F.RESOURCE_OUTPUT_LIMIT
                 elif failure==F.UNKNOWN and agent.last_validation.valid is False and agent.last_validation.verified:
                     failure=agent.last_validation.failure_type
-                status=S.VERIFIED_FAILURE if failure in {F.FORMAT_FAILURE,F.VALIDATION_FAILURE,F.TOOL_FAILURE} else S.UNKNOWN
+                status=S.VERIFIED_FAILURE if failure in {F.FORMAT_FAILURE,F.VALIDATION_FAILURE,F.TOOL_FAILURE} else S.RESOURCE_FAILURE if task.validator=='native_write_python' and failure in {F.RESOURCE_OUTPUT_LIMIT,F.RESOURCE_CONTEXT_LIMIT} else S.UNKNOWN
             self.check_stop()
             counted=[c for c in observed if c.get('input_tokens') is not None and c.get('output_tokens') is not None]
             exact=len(counted)==agent.resources.counters.model_calls
@@ -301,7 +365,7 @@ class TrainingRunner:
                 'task_id':task.id,'task_domain':str(task.category),'response_contract':mode,'difficulty':difficulty,
                 'verified_status':str(status),'failure_type':str(failure),'input_tokens':token_in,'output_tokens':token_out,
                 'tokens_estimated':not exact,'latency_ms':round((time.monotonic()-started)*1000,3),
-                'model_calls':counts.model_calls,'tool_calls':requested_tools if task.validator=='tool' else counts.tool_calls,
+                'model_calls':counts.model_calls,'tool_calls':requested_tools if task.validator in {'tool','native_write_python'} else counts.tool_calls,
                 'invalid_tool_calls':max(1,requested_tools) if tool_observation and not tool_observation.get('tool_successful') else 0,
                 'resource_retries':counts.resource_retries,'escalations':0,'context_bytes':context_bytes,
                 'information_complete':agent.information_complete,'protocol_normalized':agent.protocol_normalized,
@@ -310,6 +374,27 @@ class TrainingRunner:
                 'successful_requested_limit':final.get('requested_output_limit') if status==S.VERIFIED_SUCCESS else None,
                 'actual_success_output_tokens':final.get('output_tokens') if status==S.VERIFIED_SUCCESS else None,
                 'finish_reason':final.get('finish_reason','UNKNOWN'),'tool_observation':tool_observation,'error_type':error,'source':'benchmark'}
+            # Only evidence independently observed for a complete structured JSON
+            # response is recorded; task validation remains a separate signal.
+            protocol_status=None
+            last=getattr(agent,'last_response',None)
+            neutral={F.RESOURCE_OUTPUT_LIMIT,F.RESOURCE_CONTEXT_LIMIT,F.TIMEOUT,F.INFORMATION_MISSING,F.PERMISSION_FAILURE}
+            if mode=='STRUCTURED_JSON' and agent.information_complete and failure not in neutral and isinstance(last,dict) and not last.get('tool_calls') and str(final.get('finish_reason','')).casefold() in {'stop','end_turn'}:
+                valid_json=JSONValidator().validate('',last).valid is True
+                protocol_status='VERIFIED_SUCCESS' if valid_json and not agent.protocol_normalized else 'VERIFIED_FAILURE'
+            if task.validator=='project_plan' and protocol_status=='VERIFIED_FAILURE':
+                # A salvaged/fenced response is not a valid strict project task result.
+                status=S.UNKNOWN
+                result['verified_status']=str(status)
+            if task.validator=='file_content_python' and failure not in neutral and agent.information_complete:
+                protocol_status=agent.file_content_protocol_status
+                if protocol_status=='VERIFIED_FAILURE':status=S.UNKNOWN;result['verified_status']=str(status)
+            if task.validator=='native_write_python' and failure not in neutral and agent.information_complete:
+                finish=str(final.get('finish_reason','')).casefold()
+                if finish in {'stop','end_turn','tool_calls'}:
+                    protocol_status='VERIFIED_SUCCESS' if tool_observation.get('write_scope_checked') else 'VERIFIED_FAILURE'
+                    if protocol_status=='VERIFIED_FAILURE':status=S.UNKNOWN;result['verified_status']=str(status)
+            result['protocol_status']=protocol_status
             identifier=self.store.record(fp.id,task.category,status,subcategory=task.id,source='benchmark',benchmark_id=self.run_id,suite_version=SUITE_VERSION,
                 session_id=self.session_id,task_domain=str(task.category),response_contract=mode,difficulty=difficulty,
                 failure_type=str(failure),verified_status=str(status),information_complete=agent.information_complete,
@@ -320,7 +405,7 @@ class TrainingRunner:
                 initial_requested_limit=result['initial_requested_limit'],successful_requested_limit=result['successful_requested_limit'],
                 actual_success_output_tokens=result['actual_success_output_tokens'],resource_retries=counts.resource_retries,escalations=0,
                 resource_retry_used=bool(counts.resource_retries),resource_retry_success=bool(counts.resource_retries and status==S.VERIFIED_SUCCESS),
-                tool_observation=tool_observation,benchmark_task_id=task.id,
+                tool_observation=tool_observation,benchmark_task_id=task.id,protocol_status=protocol_status,
                 **{key:result[key] for key in ["benchmark_level","benchmark_catalog_version","benchmark_run_id","capability_v2","language_v2","protocol_v2"]})
             result.update(id=identifier,category=str(task.category),fingerprint=fp.id,signal=str(status))
             return result

@@ -1,5 +1,7 @@
 # AlienApe
 
+**Development branch: v0.7.2 is work in progress and has not been released.** Project Builder and model qualification are experimental; field tests have exposed protocol reliability limitations.
+
 AlienApe is an experimental local AI controller for Windows. It coordinates local language models, controlled file operations, permissions, task routing, verification and local model experience through a native PyQt6 interface. It is local-first; DE/EN/FR localization is partial and experimental. Model-generated output is not automatically translated, and rough edges are expected.
 
 **Early experimental software. Expect rough edges. Do not trust it with irreplaceable data without backups.**
@@ -32,3 +34,7 @@ The onedir build is written to `dist/AlienApe/AlienApe.exe`. The optional `-RunT
 - [Prompt for your AI assistant](docs/USER_AI_PROMPT.md)
 - [Known limitations](KNOWN_LIMITATIONS.md)
 - [Security](SECURITY.md)
+
+## Persistent Memory
+
+Explicit commands such as `merk dir: ...` or `remember that ...` save a bounded item for the active project; ordinary conversation and chat transcripts are not automatically saved. Ask `was hast du dir gemerkt?` or `what do you remember?` for a bounded overview. `vergiss <distinctive words>` removes one uniquely matching, non-sensitive active project record; ambiguous matches do not delete anything. Memory OFF prevents use and writes without deleting stored records. Secrets are rejected on write and sensitive historical values are masked on retrieval; this is not a password manager. Lexical relevance is bounded and can miss or select imperfect matches. Session continuity and model Experience remain separate from persistent Memory.
