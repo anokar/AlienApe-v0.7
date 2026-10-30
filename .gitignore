@@ -36,3 +36,20 @@ PARITY_*_V07*.json
 
 # Private local acceptance evidence
 REAL_ACCEPTANCE*.json
+
+# Local Memory evaluation and field evidence
+REAL_MEMORY_FIELD*.json
+MEMORY_RELEVANCE_V*.json
+MEMORY_PERFORMANCE_V*.json
+
+REAL_MEMORY_FIELD*.txt
+REAL_MEMORY_*.json
+
+# Local release-run artifacts
+BUILD_V*.txt
+FAILURE_CLASSIFICATION_V*.txt
+SOURCE_MANIFEST_V*.txt
+SHAREABILITY_V*.json
+
+BUILD_SMOKE_V*.json
+BUILD_AUDIT_V*.json

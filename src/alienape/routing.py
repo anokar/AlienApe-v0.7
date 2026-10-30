@@ -217,27 +217,42 @@ class ModelRouter:
         return Route(self.ordered(general)[0], "Spezialist fehlt; kleinstes verfügbares Fallback")
 
     def from_file_content_evidence(self,candidates):
-        """Only exact, current local live FILE_CONTENT results; never a global score."""
+        """Sufficient exact-fingerprint live observations precede benchmark ones.
+
+        Sources are never averaged. A current benchmark fills only a live gap;
+        historical NULL status and resource-neutral rows cannot qualify a model.
+        """
         if not self.experience or not self.settings.use_experience:return None
-        include_local=self.source_policy is None or self.source_policy.local_live_enabled
-        if not include_local:return None
-        suitable=[];minimum=self.settings.min_samples_for_experience
+        from .experience import SUITE_VERSION
+        minimum=self.settings.min_samples_for_experience
         quality=self.settings.quality.get('default_min_success_rate',0.8)
+        suitable=[]
         for profile in candidates:
-            if profile.tool_mode!='none':continue
             fingerprint=self.fingerprints.get(profile.id,'')
-            with self.experience.connection() as db:
-                rows=db.execute("""SELECT protocol_status FROM model_experience
-                    WHERE model_fingerprint_id=? AND response_contract='FILE_CONTENT' AND source='live'
-                    AND is_current=1 AND information_complete=1
-                    AND protocol_status IN ('VERIFIED_SUCCESS','VERIFIED_FAILURE')
-                    AND EXISTS(SELECT 1 FROM model_fingerprints WHERE id=? AND stale=0)""",(fingerprint,fingerprint)).fetchall()
-            if len(rows)>=minimum and sum(row['protocol_status']=='VERIFIED_SUCCESS' for row in rows)/len(rows)>=quality:
-                suitable.append(profile)
+            if not fingerprint:continue
+            contract='FILE_CONTENT' if profile.tool_mode=='none' else 'TOOL_ACTION'
+            sources=['live','benchmark'] if self.source_policy is None or self.source_policy.local_live_enabled else ['benchmark']
+            for source in sources:
+                # Existing live independent evidence is FILE_CONTENT only.
+                if source=='live' and contract!='FILE_CONTENT':continue
+                with self.experience.connection() as db:
+                    rows=db.execute("""SELECT protocol_status FROM model_experience
+                        WHERE model_fingerprint_id=? AND response_contract=? AND source=?
+                        AND is_current=1 AND information_complete=1
+                        AND protocol_status IN ('VERIFIED_SUCCESS','VERIFIED_FAILURE')
+                        AND (? != 'benchmark' OR suite_version=?)
+                        AND EXISTS(SELECT 1 FROM model_fingerprints WHERE id=? AND stale=0)""",
+                        (fingerprint,contract,source,source,SUITE_VERSION,fingerprint)).fetchall()
+                if len(rows)<minimum:continue
+                successes=sum(row['protocol_status']=='VERIFIED_SUCCESS' for row in rows)
+                if successes/len(rows)>=quality:suitable.append((profile,source,contract,len(rows)))
+                # Sufficient live evidence wins, even if it conflicts with benchmark.
+                break
         if not suitable:return None
-        chosen=self.ordered(suitable)[0]
-        self.observe('MODEL_SELECTED_FROM_EXPERIENCE',{'model_id':chosen.id,'protocol':'FILE_CONTENT','reason':'verified local FILE_CONTENT evidence'})
-        return Route(chosen,'Lokale verifizierte FILE_CONTENT-Protokollevidenz; keine allgemeine Coding-Bewertung')
+        selected=min(suitable,key=lambda x:self.ordered([p for p,_,_,_ in suitable]).index(x[0]))
+        chosen,source,contract,samples=selected
+        self.observe('MODEL_SELECTED_FROM_EXPERIENCE',{'model_id':chosen.id,'protocol':contract,'source':source,'samples':samples,'reason':'independent exact-fingerprint protocol evidence'})
+        return Route(chosen,'Unabhängige '+source+'-Protokollevidenz für '+contract+'; keine allgemeine Coding-Bewertung')
 
     def from_experience(self, task, candidates, category_override=None):
         from .taxonomy import task_category

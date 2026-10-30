@@ -72,5 +72,19 @@
   "UI_INPUT_HINT": "Que souhaitez-vous faire dans le projet ?",
   "SERVER_CONNECT_ERROR": "Serveur de modèles inaccessible. Démarrez Ollama ou le serveur local LM Studio et vérifiez l’adresse et le port.",
   "SERVER_TIMEOUT_ERROR": "Le serveur de modèles a dépassé le délai. Vérifiez que le modèle est chargé.",
-  "SERVER_HTTP_ERROR": "Le serveur de modèles a renvoyé HTTP {status}. Vérifiez le modèle, la taille du contexte, la clé API et la prise en charge des outils. Consultez le journal d’activité."
+  "SERVER_HTTP_ERROR": "Le serveur de modèles a renvoyé HTTP {status}. Vérifiez le modèle, la taille du contexte, la clé API et la prise en charge des outils. Consultez le journal d’activité.",
+  "MEMORY_FORGET_DISABLED": "La mémoire est désactivée. Rien n’a été supprimé.",
+  "MEMORY_FORGET_DONE": "L’information correspondante a été supprimée de la mémoire.",
+  "MEMORY_FORGET_UNCLEAR": "Aucune information unique ne correspond. Précisez votre demande ; rien n’a été supprimé.",
+  "PROJECT_NAME_REQUIRED": "Quel nom donner au nouveau dossier du projet ?",
+  "PROJECT_ROOT_INVALID": "Indiquez un nom de projet relatif sûr, sans chemin. Rien n’a été modifié.",
+  "PROJECT_ROOT_EXISTS": "Le dossier contient déjà des fichiers. La modification de projets existants n’est pas encore prise en charge.",
+  "PROJECT_PLAN_INVALID": "Le plan ou le chemin du projet est invalide. Aucun projet n’a été lancé.",
+  "PROJECT_UNAVAILABLE": "La planification sûre n’est pas encore disponible pour cette demande. Rien n’a été modifié.",
+  "PROJECT_EXECUTION": "Exécution du projet",
+  "PROJECT_WRITTEN": "Fichiers écrits",
+  "PROJECT_FAILED_SKIPPED": "Échec ou étape ignorée",
+  "PROJECT_VERIFICATION": "Vérification du projet",
+  "PROJECT_FILE_VERIFICATION": "vérification",
+  "PROJECT_INTERRUPTED": "L’exécution du projet a été interrompue. Les fichiers déjà créés peuvent subsister ; vérifiez le dossier."
 }

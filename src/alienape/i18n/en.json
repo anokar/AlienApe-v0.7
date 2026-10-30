@@ -72,5 +72,19 @@
   "UI_INPUT_HINT": "What would you like to do in the project?",
   "SERVER_CONNECT_ERROR": "Cannot reach the model server. Start Ollama or the local LM Studio server and check the URL and port.",
   "SERVER_TIMEOUT_ERROR": "The model server timed out. Check whether the model is loaded.",
-  "SERVER_HTTP_ERROR": "The model server returned HTTP {status}. Check the model, context size, API key and tool support. See the activity log for details."
+  "SERVER_HTTP_ERROR": "The model server returned HTTP {status}. Check the model, context size, API key and tool support. See the activity log for details.",
+  "MEMORY_FORGET_DISABLED": "Memory is disabled. Nothing was deleted.",
+  "MEMORY_FORGET_DONE": "The matching memory was deleted.",
+  "MEMORY_FORGET_UNCLEAR": "No unique matching memory was found. Please clarify; nothing was deleted.",
+  "PROJECT_NAME_REQUIRED": "What should the new project folder be called?",
+  "PROJECT_ROOT_INVALID": "Please provide a safe relative project name without a path. Nothing was changed.",
+  "PROJECT_ROOT_EXISTS": "The project folder already contains files. Existing-project modification is not supported yet.",
+  "PROJECT_PLAN_INVALID": "The project plan or path is invalid. No project was started.",
+  "PROJECT_UNAVAILABLE": "Safe planning is not yet available for this project request. Nothing was changed.",
+  "PROJECT_EXECUTION": "Project execution",
+  "PROJECT_WRITTEN": "Written",
+  "PROJECT_FAILED_SKIPPED": "Failed or skipped",
+  "PROJECT_VERIFICATION": "Project verification",
+  "PROJECT_FILE_VERIFICATION": "verification",
+  "PROJECT_INTERRUPTED": "Project execution was interrupted. Files already created may remain; inspect the project folder."
 }

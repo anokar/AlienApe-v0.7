@@ -7,7 +7,7 @@ import re
 class IntentID(StrEnum):
     ANALYZE_DIRECTORY='ANALYZE_DIRECTORY';MODEL_STATUS_QUERY='MODEL_STATUS_QUERY';GENERAL_CHAT='GENERAL_CHAT';EXPLAIN_CODE='EXPLAIN_CODE';CODE_GENERATION_RESPONSE='CODE_GENERATION_RESPONSE';CAPABILITY_QUERY='CAPABILITY_QUERY'
     GREETING='GREETING';THANKS='THANKS';GOODBYE='GOODBYE';IDENTITY_QUERY='IDENTITY_QUERY'
-    CREATE_PROJECT='CREATE_PROJECT';REASON_QUERY='REASON_QUERY';DELETE_REQUEST_UNSUPPORTED='DELETE_REQUEST_UNSUPPORTED'
+    PROJECT_BUILD='PROJECT_BUILD';CREATE_PROJECT='CREATE_PROJECT';REASON_QUERY='REASON_QUERY';DELETE_REQUEST_UNSUPPORTED='DELETE_REQUEST_UNSUPPORTED'
     READ_FILE='READ_FILE';FIND_FILE='FIND_FILE';CREATE_FILE='CREATE_FILE';MODIFY_FILE='MODIFY_FILE'
     CREATE_DIRECTORY='CREATE_DIRECTORY';ANALYZE_FILE='ANALYZE_FILE';VERIFY_FILE='VERIFY_FILE';VERIFY_PROJECT='VERIFY_PROJECT'
 
@@ -35,6 +35,12 @@ class IntentResolver(Protocol):
 class DeterministicIntentResolver:
     """Bounded DE/EN patterns for observed requests, not a semantic classifier."""
     def resolve(self,task):
+        from .project_request import project_request
+        request=project_request(task)
+        if request:
+            from .task_slots import TaskSlots
+            slots=TaskSlots(intent_id=IntentID.PROJECT_BUILD,project_goal=request.goal,project_root=request.root or '',language_hint=request.language_hint,new_project=True,mutation_requested=True,missing_slots=() if request.root else ('project_root',))
+            return IntentResolution(IntentID.PROJECT_BUILD,1.,source='deterministic-project',handled=True,mutation_requested=True,project_scope='workspace',slots=slots)
         from .task_slots import resolve_slots
         return resolve_slots(task,self._legacy_resolve(task))
 

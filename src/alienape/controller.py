@@ -79,6 +79,7 @@ class ResourceController:
             r"was (?:ist|steht) (?:alles )?im (?:memory|gedächtnis|speicher)",
             r"(?:zeige|zeig|liste) (?:mir )?(?:alle |meine |unsere |die )?(?:gespeicherten )?(?:erinnerungen|memories|projektinformationen|projektregeln)(?: an| auf)?",
             r"(?:memory|erinnerungen) (?:anzeigen|auflisten)",
+            r"was weisst du über mein projekt",
             r"what (?:do you remember|have you (?:remembered|memorized|saved))",
             r"show (?:me )?(?:all )?(?:project )?memor(?:y|ies)",
         )

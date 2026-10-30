@@ -72,5 +72,19 @@
   "UI_INPUT_HINT": "Was möchtest du im Projekt erledigen?",
   "SERVER_CONNECT_ERROR": "Modellserver nicht erreichbar. Starte Ollama bzw. den lokalen Server in LM Studio und prüfe URL und Port.",
   "SERVER_TIMEOUT_ERROR": "Modellserver-Zeitlimit überschritten. Prüfe, ob das Modell geladen ist.",
-  "SERVER_HTTP_ERROR": "Modellserver meldet HTTP {status}. Prüfe Modell, Kontextgröße, API-Schlüssel und Tool-Unterstützung. Details im Aktivitätslog."
+  "SERVER_HTTP_ERROR": "Modellserver meldet HTTP {status}. Prüfe Modell, Kontextgröße, API-Schlüssel und Tool-Unterstützung. Details im Aktivitätslog.",
+  "MEMORY_FORGET_DISABLED": "Memory ist ausgeschaltet. Es wurde nichts gelöscht.",
+  "MEMORY_FORGET_DONE": "Die passende Memory-Information wurde gelöscht.",
+  "MEMORY_FORGET_UNCLEAR": "Keine eindeutige Memory-Information gefunden. Bitte genauer angeben; es wurde nichts gelöscht.",
+  "PROJECT_NAME_REQUIRED": "Wie soll der neue Projektordner heißen?",
+  "PROJECT_ROOT_INVALID": "Bitte einen sicheren relativen Projektnamen ohne Pfad angeben. Es wurde nichts verändert.",
+  "PROJECT_ROOT_EXISTS": "Der Projektordner enthält bereits Dateien. Änderungen an bestehenden Projekten werden noch nicht unterstützt.",
+  "PROJECT_PLAN_INVALID": "Der Projektplan oder der Projektpfad ist ungültig. Es wurde kein Projekt gestartet.",
+  "PROJECT_UNAVAILABLE": "Für diesen Projektauftrag ist die sichere Planung noch nicht verfügbar. Es wurde nichts verändert.",
+  "PROJECT_EXECUTION": "Projektausführung",
+  "PROJECT_WRITTEN": "Geschrieben",
+  "PROJECT_FAILED_SKIPPED": "Fehlgeschlagen oder übersprungen",
+  "PROJECT_VERIFICATION": "Projektprüfung",
+  "PROJECT_FILE_VERIFICATION": "Prüfung",
+  "PROJECT_INTERRUPTED": "Die Projektausführung wurde unterbrochen. Bereits erstellte Dateien können bestehen bleiben; bitte den Projektordner prüfen."
 }

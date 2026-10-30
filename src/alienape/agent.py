@@ -29,6 +29,7 @@ class Session:
         self.task_state=SessionTaskState()
         self.semantic_resolver=None
         self.semantic_signature=None
+        self.pending_project=None
 
     def clear(self):
         self.history.clear()
@@ -36,6 +37,7 @@ class Session:
         self.task_state=SessionTaskState()
         self.semantic_resolver=None
         self.semantic_signature=None
+        self.pending_project=None
 
 
 class Agent:
@@ -667,6 +669,12 @@ class Agent:
                 answer=localize('MEMORY_SENSITIVE_REJECTED',self.settings.ui.language)
                 self.emit('DIRECT_RESPONSE',{'source':'CONTROLLER','intent_id':'MEMORY_SECURITY','model_calls':0})
             else:
+                from .project_entry import maybe_project_build
+                project_handled,project_answer = await maybe_project_build(self,task) if not memory_request else (False,None)
+                if project_handled:
+                    answer=project_answer
+                    if trace:trace.finish(self,answer)
+                    return answer
                 from .compound_tasks import split_compound
                 plan=split_compound(task) if not memory_request else None
                 if plan and plan.clarification:
@@ -773,6 +781,15 @@ class Agent:
         if re.match(r"(?i)\s*(?:merke\s+dir|remember)\b",task) and ("<REDACTED>" in task or re.search(r"(?i)api[-_ ]?key|access[-_ ]?token|passwort|password|client_secret|private[-_ ]?key",task)):
             from .i18n import localize
             return localize("MEMORY_SECRET_REFERENCE",self.settings.ui.language)
+        forget=re.fullmatch(r'(?is)\s*(?:vergiss|forget\s+(?:the\s+memory\s+about\s+)?)\s+(.+?)\s*[.!?]?\s*',task)
+        if forget:
+            from .i18n import localize
+            target=forget.group(1).strip()
+            if not self.memory or not self.settings.memory.enabled:return localize('MEMORY_FORGET_DISABLED',self.settings.ui.language)
+            outcome=self.memory.forget_matching(target)
+            self.emit('MEMORY_DELETE_REQUEST',{'outcome':outcome,'source':'CONTROLLER'})
+            if outcome=='DELETED':return localize('MEMORY_FORGET_DONE',self.settings.ui.language)
+            return localize('MEMORY_FORGET_UNCLEAR',self.settings.ui.language)
         self.emit("USER_MESSAGE", {"text": task})
         from .task_state import followup_intent,resolve_followup
         import uuid

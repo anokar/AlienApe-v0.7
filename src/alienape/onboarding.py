@@ -59,6 +59,37 @@ def catalog_v2():
     return tuple(tasks)
 
 
+
+def project_plan_qualification_tasks():
+    """Fixed advisory-plan tasks for the existing TrainingRunner, no filesystem writes."""
+    requests=(
+        'Small Python command-line program and tests.',
+        'Small PyQt6 folder picker and a test.',
+        'Static website using HTML, CSS and JavaScript.',
+        'Make a tiny Python notes tool and tests.',
+        'Python project with application and tests depending on it.',
+        'Small project; never propose traversal or paths outside the root.',
+    )
+    instruction=(' Return only bare JSON with exactly {"files":[{"path":"relative/path",'
+        '"purpose":"purpose","language":"language","depends_on":[]}]}. '
+        'Use only relative paths, no extra fields or actions, and at most 12 files.')
+    return tuple(OnboardingTask('plan-v1-'+str(i),'REASONING',request+instruction,
+        'project_plan',None,'STRUCTURED_JSON','LITE',(),VERSION,'reasoning','structured_json','en')
+        for i,request in enumerate(requests,1))
+
+
+def file_transport_qualification_tasks():
+    """Fixed transport tests; task content is assessed separately from transport."""
+    variants=(('addition','+'),('subtraction','-'),('addition','+'),('multiplication','*'),('subtraction','-'))
+    tasks=[]
+    for mode,protocol,validator in (('FILE_CONTENT','file_content','file_content_python'),('TOOL_ACTION','native_tool_calling','native_write_python')):
+        for index,(operation,symbol) in enumerate(variants,1):
+            target='target_'+str(index)+'.py'
+            instruction=(' Return only JSON with exactly one field content containing the complete Python file; no markdown or path.' if mode=='FILE_CONTENT' else ' Call write_file exactly once for '+target+' with the complete Python file. No other tool.')
+            prompt=('Implement solve(a,b), returning a minus b, in '+target+'.' if index==5 else 'Create '+target+' with Python function solve(a,b) returning their '+operation+'.')+instruction
+            tasks.append(OnboardingTask('transport-v2-'+protocol+'-'+str(index),'PYTHON_CODING',prompt,validator,{'target':target,'symbol':symbol},mode,'LITE',(),'transport-v2','code_generation',protocol,'en'))
+    return tuple(tasks)
+
 def plan_v2(profile,tasks,level):
     if level not in LEVELS:raise ValueError('Benchmark-Level muss lite, medium oder hard sein.')
     v=profile.v2();primary=v.languages.get('primary_language','de');declared=v.languages.get('declared_languages',[])
@@ -85,7 +116,9 @@ def evidence_view(store,fingerprint):
             if not name:continue
             item=out[dimension].setdefault(name,{}).setdefault(source,{'samples':0,'verified_successes':0,'verified_failures':0,'unknown':0})
             item['samples']+=1
-            good=r['success_signal']=='VERIFIED_SUCCESS';bad=r['success_signal']=='VERIFIED_FAILURE'
+            # Historical task outcomes are not independent protocol observations.
+            value=r.get('protocol_status') if dimension=='protocols' else r['success_signal']
+            good=value=='VERIFIED_SUCCESS';bad=value=='VERIFIED_FAILURE'
             item['verified_successes']+=int(good);item['verified_failures']+=int(bad);item['unknown']+=int(not good and not bad)
     for source in ['benchmark','live']:
         subset=[r for r in rows if r['source']==source]

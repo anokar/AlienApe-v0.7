@@ -26,6 +26,9 @@ class TaskSlots:
     ambiguous_slots:tuple=()
     resolution_source:str='DIRECT_RULE'
     slot_sources:dict=field(default_factory=dict)
+    project_goal:str=''
+    project_root:str=''
+    new_project:bool=False
 
     @property
     def complete(self):return not self.missing_slots and not self.ambiguous_slots
