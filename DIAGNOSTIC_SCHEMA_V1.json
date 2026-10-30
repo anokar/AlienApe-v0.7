@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AlienApe Diagnostic Trace V1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "trace_id",
+    "input",
+    "intent",
+    "task",
+    "routing",
+    "model_requests",
+    "model_completions",
+    "tools",
+    "validation",
+    "verification",
+    "final_response",
+    "experience",
+    "resources",
+    "events",
+    "truncated"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{32}$"
+    },
+    "input": {
+      "type": "object"
+    },
+    "intent": {
+      "type": "object"
+    },
+    "task": {
+      "type": "object"
+    },
+    "routing": {
+      "type": "array"
+    },
+    "model_requests": {
+      "type": "array"
+    },
+    "model_completions": {
+      "type": "array"
+    },
+    "tools": {
+      "type": "object"
+    },
+    "validation": {
+      "type": "array"
+    },
+    "verification": {
+      "type": "array"
+    },
+    "final_response": {
+      "type": "object"
+    },
+    "experience": {
+      "type": "object"
+    },
+    "resources": {
+      "type": "object"
+    },
+    "events": {
+      "type": "array"
+    },
+    "truncated": {
+      "type": "boolean"
+    },
+    "resolver_chain": {
+      "type": "object"
+    },
+    "task_slots": {
+      "type": "object"
+    },
+    "pending_state": {
+      "type": "array"
+    },
+    "last_generated_artifact": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,32 @@
+{
+  "C-model_1-python": {
+    "text": "```json\n{\n  \"code\": \"def solve(a,b):\\n    return a + b\"\n}\n```",
+    "source": "validation\\full_system_5models\\cases\\C-model_1-python\\RESULT.json",
+    "original_failure": "FORMAT_FAILURE"
+  },
+  "C-model_1-file": {
+    "text": "```json\n{\n  \"main_scene\": \"res://scenes/isometric_world.tscn\",\n  \"renderer\": \"gl_compatibility\"\n}\n```",
+    "source": "validation\\full_system_5models\\cases\\C-model_1-file\\RESULT.json",
+    "original_failure": "FORMAT_FAILURE"
+  },
+  "C-model_1-information": {
+    "text": "```json\n{\n  \"target\": \"archipelago\",\n  \"prefix\": \"SEA\"\n}\n```",
+    "source": "validation\\full_system_5models\\cases\\C-model_1-information\\RESULT.json",
+    "original_failure": "FORMAT_FAILURE"
+  },
+  "C-model_2-python": {
+    "text": " {\"answer\": {\"code\": \"def solve(a, b):\\n return a + b\"}}",
+    "source": "validation\\full_system_5models\\cases\\C-model_2-python\\RESULT.json",
+    "original_failure": "VALIDATION_FAILURE"
+  },
+  "C-model_2-structured": {
+    "text": " {\"answer\": \"Die Antwort lautet: {\\\"city\\\":\\\"Bern\\\",\\\"active\\\":true,\\\"count\\\":2}.\", \"status\": \"ok\"}",
+    "source": "validation\\full_system_5models\\cases\\C-model_2-structured\\RESULT.json",
+    "original_failure": "VALIDATION_FAILURE"
+  },
+  "C-model_4-structured": {
+    "text": "```json\n{\"city\":\"Bern\",\"active\":true,\"count\":2}\n```",
+    "source": "validation\\full_system_5models\\cases\\C-model_4-structured\\RESULT.json",
+    "original_failure": "FORMAT_FAILURE"
+  }
+}

@@ -1,0 +1,3 @@
+Hallo AlienApe!
+Dies ist die Demo-Datei im ausgewählten Projektordner.
+Du kannst sie lesen und Fragen zu ihrem Inhalt stellen.

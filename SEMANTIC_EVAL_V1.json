@@ -1,0 +1,78 @@
+{
+  "catalog_version": "1.0.0",
+  "note": "Expected labels are evaluation hypotheses, not guaranteed matches.",
+  "cases": [
+    {
+      "text": "was kannst du?",
+      "expected": "CAPABILITY_QUERY"
+    },
+    {
+      "text": "was kanst du?",
+      "expected": "CAPABILITY_QUERY"
+    },
+    {
+      "text": "was kanst du alles?",
+      "expected": "CAPABILITY_QUERY"
+    },
+    {
+      "text": "sag mal was du kannst",
+      "expected": "CAPABILITY_QUERY"
+    },
+    {
+      "text": "erstelle eine python datei",
+      "expected": "CREATE_FILE"
+    },
+    {
+      "text": "prüfe dieses projekt",
+      "expected": "VERIFY_PROJECT"
+    },
+    {
+      "text": "lies test.txt",
+      "expected": "READ_FILE"
+    },
+    {
+      "text": "what can you do?",
+      "expected": "CAPABILITY_QUERY"
+    },
+    {
+      "text": "create a python file",
+      "expected": "CREATE_FILE"
+    },
+    {
+      "text": "check this project",
+      "expected": "VERIFY_PROJECT"
+    },
+    {
+      "text": "read test.txt",
+      "expected": "READ_FILE"
+    },
+    {
+      "text": "qu'est-ce que tu peux faire ?",
+      "expected": "CAPABILITY_QUERY"
+    },
+    {
+      "text": "crée un fichier python",
+      "expected": "CREATE_FILE"
+    },
+    {
+      "text": "vérifie ce projet",
+      "expected": "VERIFY_PROJECT"
+    },
+    {
+      "text": "mach das",
+      "expected": "AMBIGUOUS"
+    },
+    {
+      "text": "do it",
+      "expected": "AMBIGUOUS"
+    },
+    {
+      "text": "was?",
+      "expected": "AMBIGUOUS"
+    },
+    {
+      "text": "was ist ChatGPT?",
+      "expected": "GENERAL_CHAT"
+    }
+  ]
+}

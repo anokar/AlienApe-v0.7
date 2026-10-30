@@ -1,0 +1,337 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AlienApe Model Profile V2 declarations",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "migration_version",
+    "task_capabilities",
+    "protocol_capabilities",
+    "modalities",
+    "languages",
+    "reasoning",
+    "limits",
+    "resources",
+    "identity"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "migration_version": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "task_capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "general_chat",
+        "explanation",
+        "summarization",
+        "coding",
+        "code_generation",
+        "code_debugging",
+        "code_review",
+        "reasoning",
+        "tool_selection",
+        "information_synthesis",
+        "long_context_analysis"
+      ],
+      "properties": {
+        "general_chat": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "explanation": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "summarization": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "coding": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "code_generation": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "code_debugging": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "code_review": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "reasoning": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "tool_selection": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "information_synthesis": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "long_context_analysis": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        }
+      }
+    },
+    "protocol_capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plain_text",
+        "native_tool_calling",
+        "json_fallback",
+        "structured_json",
+        "file_proposal",
+        "analysis_result",
+        "tool_action"
+      ],
+      "properties": {
+        "plain_text": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "native_tool_calling": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "json_fallback": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "structured_json": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "file_proposal": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "analysis_result": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "tool_action": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        }
+      }
+    },
+    "modalities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text_input",
+        "image_input",
+        "audio_input",
+        "text_output",
+        "image_output"
+      ],
+      "properties": {
+        "text_input": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "image_input": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "audio_input": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "text_output": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "image_output": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        }
+      }
+    },
+    "languages": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "declared_multilingual": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "declared_languages": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}$"
+          }
+        },
+        "primary_language": {
+          "type": "string",
+          "pattern": "^[a-z]{2,3}$"
+        }
+      }
+    },
+    "reasoning": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reasoning_supported": {
+          "enum": [
+            "SUPPORTED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "supported_efforts": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh"
+            ]
+          }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "context_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "resource_class": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "local_memory_estimate": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "quantization": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "parameter_class": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "classification": {
+          "enum": [
+            "local",
+            "cloud",
+            "unknown"
+          ]
+        }
+      }
+    }
+  }
+}

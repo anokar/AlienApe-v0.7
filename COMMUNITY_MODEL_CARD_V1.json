@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AlienApe Community Model Card V1 (draft; unverified)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "card_id",
+    "model_fingerprint",
+    "model_name",
+    "model_digest",
+    "quantization",
+    "backend_identity",
+    "capability_v2",
+    "protocol_v2",
+    "language_v2",
+    "sample_count",
+    "verified_successes",
+    "verified_failures",
+    "unknown_results",
+    "created_at",
+    "stale_after",
+    "issuer_id",
+    "payload_hash",
+    "signature_scheme",
+    "signature"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "card_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[A-Za-z0-9_.:@+-]+$"
+    },
+    "model_fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "model_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[A-Za-z0-9_.:@+-]+$"
+    },
+    "model_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "quantization": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[A-Za-z0-9_.:@+-]+$"
+    },
+    "backend_identity": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[A-Za-z0-9_.:@+-]+$"
+    },
+    "capability_v2": {
+      "enum": [
+        "general_chat",
+        "explanation",
+        "summarization",
+        "coding",
+        "code_generation",
+        "code_debugging",
+        "code_review",
+        "reasoning",
+        "tool_selection",
+        "information_synthesis",
+        "long_context_analysis"
+      ]
+    },
+    "protocol_v2": {
+      "enum": [
+        "plain_text",
+        "native_tool_calling",
+        "json_fallback",
+        "structured_json",
+        "file_proposal",
+        "analysis_result",
+        "tool_action"
+      ]
+    },
+    "language_v2": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}$"
+    },
+    "sample_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000000
+    },
+    "verified_successes": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000000
+    },
+    "verified_failures": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000000
+    },
+    "unknown_results": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000000
+    },
+    "latency_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "median",
+        "unit"
+      ],
+      "properties": {
+        "median": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "unit": {
+          "enum": [
+            "ms",
+            "bytes",
+            "tokens",
+            "watts",
+            "joules"
+          ]
+        }
+      }
+    },
+    "resource_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "median",
+        "unit"
+      ],
+      "properties": {
+        "median": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "unit": {
+          "enum": [
+            "ms",
+            "bytes",
+            "tokens",
+            "watts",
+            "joules"
+          ]
+        }
+      }
+    },
+    "benchmark_catalog_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[A-Za-z0-9_.:@+-]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "maxLength": 32
+    },
+    "stale_after": {
+      "type": "string",
+      "maxLength": 32
+    },
+    "issuer_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[A-Za-z0-9_.:@+-]+$"
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "signature_scheme": {
+      "enum": [
+        "none",
+        "ed25519"
+      ]
+    },
+    "signature": {
+      "type": "string",
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9+/=_-]*$"
+    }
+  }
+}

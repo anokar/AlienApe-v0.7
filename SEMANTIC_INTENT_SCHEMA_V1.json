@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AlienApe Semantic Intent Suggestion V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "catalog_version",
+    "intent_id",
+    "match_status",
+    "top_similarity",
+    "second_similarity",
+    "margin",
+    "threshold_result",
+    "accepted",
+    "top_matches",
+    "model",
+    "fingerprint",
+    "reason",
+    "embedding_calls",
+    "input_size",
+    "elapsed_ms"
+  ],
+  "properties": {
+    "catalog_version": {
+      "const": "1.0.0"
+    },
+    "intent_id": {
+      "enum": [
+        null,
+        "GENERAL_CHAT",
+        "GREETING",
+        "THANKS",
+        "GOODBYE",
+        "IDENTITY_QUERY",
+        "CAPABILITY_QUERY",
+        "EXPLAIN_CODE",
+        "READ_FILE",
+        "FIND_FILE",
+        "CREATE_FILE",
+        "MODIFY_FILE",
+        "CREATE_DIRECTORY",
+        "CREATE_PROJECT",
+        "ANALYZE_FILE",
+        "VERIFY_FILE",
+        "VERIFY_PROJECT"
+      ]
+    },
+    "match_status": {
+      "enum": [
+        "HIGH_MATCH",
+        "AMBIGUOUS",
+        "NO_MATCH",
+        "UNAVAILABLE"
+      ]
+    },
+    "top_similarity": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -2,
+      "maximum": 2
+    },
+    "second_similarity": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -2,
+      "maximum": 2
+    },
+    "margin": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": -2,
+      "maximum": 2
+    },
+    "configured_confidence_threshold": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 2
+    },
+    "effective_confidence_threshold": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 2
+    },
+    "configured_ambiguity_margin": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 2
+    },
+    "effective_ambiguity_margin": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 2
+    },
+    "mutation_threshold_applied": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "threshold_result": {
+      "type": "boolean"
+    },
+    "accepted": {
+      "type": "boolean"
+    },
+    "top_matches": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "intent_id",
+          "similarity"
+        ],
+        "properties": {
+          "intent_id": {
+            "enum": [
+              "GENERAL_CHAT",
+              "GREETING",
+              "THANKS",
+              "GOODBYE",
+              "IDENTITY_QUERY",
+              "CAPABILITY_QUERY",
+              "EXPLAIN_CODE",
+              "READ_FILE",
+              "FIND_FILE",
+              "CREATE_FILE",
+              "MODIFY_FILE",
+              "CREATE_DIRECTORY",
+              "CREATE_PROJECT",
+              "ANALYZE_FILE",
+              "VERIFY_FILE",
+              "VERIFY_PROJECT"
+            ]
+          },
+          "similarity": {
+            "type": "number",
+            "minimum": -1,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "model": {
+      "type": "string",
+      "maxLength": 300
+    },
+    "fingerprint": {
+      "type": "string",
+      "maxLength": 300
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 300
+    },
+    "embedding_calls": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "input_size": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "elapsed_ms": {
+      "type": "number",
+      "minimum": 0
+    }
+  }
+}

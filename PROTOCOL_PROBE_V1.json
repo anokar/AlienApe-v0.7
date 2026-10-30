@@ -1,0 +1,23 @@
+{
+  "catalog_version": "1.0.0",
+  "source": "protocol_probe",
+  "capability_v2": "code_generation",
+  "protocol_v2": "file_proposal",
+  "tasks": [
+    {
+      "id": "py-hello",
+      "target_path": "hello.py",
+      "prompt": "Create hello.py containing a minimal Hello World program."
+    },
+    {
+      "id": "py-chooser",
+      "target_path": "chooser.py",
+      "prompt": "Create chooser.py containing a small file-selection example."
+    },
+    {
+      "id": "html-button",
+      "target_path": "index.html",
+      "prompt": "Create index.html containing a button."
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "catalog_version": "1.0.0",
+  "advisory_only": true,
+  "intents": [
+    {
+      "intent_id": "GENERAL_CHAT",
+      "description": "Have a general conversation or answer a question without workspace changes."
+    },
+    {
+      "intent_id": "GREETING",
+      "description": "Greet AlienApe or say hello."
+    },
+    {
+      "intent_id": "THANKS",
+      "description": "Thank AlienApe for its help."
+    },
+    {
+      "intent_id": "GOODBYE",
+      "description": "Say goodbye or end a conversation."
+    },
+    {
+      "intent_id": "IDENTITY_QUERY",
+      "description": "Ask who AlienApe is or what its identity is."
+    },
+    {
+      "intent_id": "CAPABILITY_QUERY",
+      "description": "Ask what AlienApe can do or is permitted to do."
+    },
+    {
+      "intent_id": "EXPLAIN_CODE",
+      "description": "Explain programming code or how to write code without changing workspace files."
+    },
+    {
+      "intent_id": "READ_FILE",
+      "description": "Read and display the contents of an explicitly named workspace file."
+    },
+    {
+      "intent_id": "FIND_FILE",
+      "description": "Find an existing file or implementation in the workspace."
+    },
+    {
+      "intent_id": "CREATE_FILE",
+      "description": "Create a new workspace file, optionally generating or providing its contents."
+    },
+    {
+      "intent_id": "MODIFY_FILE",
+      "description": "Change the contents of an existing explicitly identified workspace file."
+    },
+    {
+      "intent_id": "CREATE_DIRECTORY",
+      "description": "Create a named directory in the workspace."
+    },
+    {
+      "intent_id": "CREATE_PROJECT",
+      "description": "Create a new project from a project template."
+    },
+    {
+      "intent_id": "ANALYZE_FILE",
+      "description": "Analyze the contents or behavior of an existing workspace file."
+    },
+    {
+      "intent_id": "VERIFY_FILE",
+      "description": "Verify or test an explicitly identified existing file for errors."
+    },
+    {
+      "intent_id": "VERIFY_PROJECT",
+      "description": "Verify or test the existing workspace project for errors."
+    }
+  ]
+}
