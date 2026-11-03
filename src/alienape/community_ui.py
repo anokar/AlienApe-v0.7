@@ -1,4 +1,7 @@
 """Offline UI for explicitly exporting and inspecting unverified observations."""
+import json
+import unicodedata
+
 from PyQt6.QtCore import Qt, QIODevice, QSaveFile
 from PyQt6.QtWidgets import (
     QAbstractItemView, QCheckBox, QDialog, QFileDialog, QFormLayout, QHBoxLayout,
@@ -10,6 +13,22 @@ from .community_evidence import (
     MAX_CARD_BYTES, CardValidationError, CommunityEvidenceStore,
     export_local_observation, list_local_observations, serialize_card,
 )
+
+
+def _display_safe(value):
+    """Make invisible Unicode controls visible without changing stored card data."""
+    if isinstance(value, str):
+        return "".join(
+            f"⟦U+{ord(character):04X}⟧"
+            if unicodedata.category(character) in {"Cc", "Cf", "Cs", "Co", "Cn", "Zl", "Zp"}
+            else character
+            for character in value
+        )
+    if isinstance(value, dict):
+        return {_display_safe(key): _display_safe(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_display_safe(item) for item in value]
+    return value
 
 
 class ExportObservationDialog(QDialog):
@@ -60,8 +79,7 @@ class ExportObservationDialog(QDialog):
                 self.experience_store, self.local_id,
                 self.description.text(), self.limitations.text(),
             )
-            import json
-            self.preview.setPlainText(json.dumps(self.card, ensure_ascii=False, sort_keys=True, indent=2))
+            self.preview.setPlainText(json.dumps(_display_safe(self.card), ensure_ascii=False, sort_keys=True, indent=2))
         except (CardValidationError, ValueError) as exc:
             self.card = None
             self.preview.setPlainText(f"Export nicht möglich: {exc}")
@@ -225,5 +243,4 @@ class CommunityCardsPanel(QWidget):
             return
         record = self.community_store.get_card(item.data(Qt.ItemDataRole.UserRole))
         if record:
-            import json
-            self.card_detail.setPlainText(json.dumps(record["card"], ensure_ascii=False, sort_keys=True, indent=2))
+            self.card_detail.setPlainText(json.dumps(_display_safe(record["card"]), ensure_ascii=False, sort_keys=True, indent=2))

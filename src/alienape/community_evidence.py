@@ -204,7 +204,8 @@ def validate_card(card):
         raise CardValidationError("Unsupported Community Card schema version")
     errors = sorted(_VALIDATOR.iter_errors(card), key=lambda error: list(error.path))
     if errors:
-        raise CardValidationError("Card does not match the strict schema: " + errors[0].message[:180])
+        # Do not echo untrusted property names or values into UI error dialogs.
+        raise CardValidationError("Card does not match the strict schema")
     for key in ("created_at", "exported_at", "provenance"):
         stamp = card[key] if key != "provenance" else card[key]["observed_at"]
         try:

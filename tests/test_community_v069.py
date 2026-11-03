@@ -3,7 +3,7 @@ import hashlib
 import json
 
 import pytest
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QPlainTextEdit
 
 from alienape.community_evidence import (
     CARD_SCHEMA_VERSION, CardConflictError, CardValidationError,
@@ -12,6 +12,7 @@ from alienape.community_evidence import (
     list_local_observations, serialize_card,
 )
 from alienape.config import Settings
+from alienape.community_ui import CommunityCardsPanel
 from alienape.experience import ExperienceStore, ModelFingerprint, SuccessSignal
 from alienape.routing import ModelRegistry, ModelRouter
 from alienape.ui import MainWindow
@@ -76,6 +77,9 @@ def test_unknown_fingerprint_metadata_stays_null(tmp_path):
     assert card["model_identity"]["digest"] is None
     assert card["model_identity"]["quantization"] is None
     assert card["conditions"]["transport"] in {"none", "native", "json_fallback", "UNKNOWN"}
+    community = CommunityEvidenceStore(tmp_path / "community.sqlite3")
+    assert community.import_card(card) == "IMPORTED"
+    assert community.get_card(card["card_id"])["trust_state"] == "UNVERIFIED"
 
 
 def test_negative_protocol_evidence_remains_distinct_from_task_quality(tmp_path):
@@ -146,11 +150,30 @@ def test_import_rejects_malformed_duplicate_keys_unsupported_extra_and_oversized
     unsupported = dict(card, schema_version="99.0")
     with pytest.raises(CardValidationError, match="Unsupported"):
         store.import_card(unsupported)
-    extra = dict(card, surprise="field")
-    with pytest.raises(CardValidationError, match="strict schema"):
+    dangerous_key = "<img src=x onerror=execute()>"
+    extra = dict(card, **{dangerous_key: "untrusted"})
+    with pytest.raises(CardValidationError, match="strict schema") as error:
         store.import_card(extra)
+    assert dangerous_key not in str(error.value)
+    missing_provenance = dict(card)
+    del missing_provenance["provenance"]
+    with pytest.raises(CardValidationError, match="strict schema"):
+        store.import_card(missing_provenance)
+    long_text = json.loads(json.dumps(card))
+    long_text["task"]["description"] = "x" * 241
+    rehash(long_text)
+    with pytest.raises(CardValidationError, match="strict schema"):
+        store.import_card(long_text)
+    wrong_type = json.loads(json.dumps(card))
+    wrong_type["outcomes"] = []
+    with pytest.raises(CardValidationError, match="strict schema"):
+        store.import_card(wrong_type)
     with pytest.raises(CardValidationError, match="64 KiB"):
         store.import_json(b" " * (64 * 1024 + 1))
+    tampered = json.loads(json.dumps(card))
+    tampered["task"]["description"] = "Integrity was altered"
+    with pytest.raises(CardValidationError, match="content hash"):
+        store.import_card(tampered)
 
 
 def test_duplicate_card_id_conflict_is_rejected(tmp_path):
@@ -189,6 +212,28 @@ def test_local_observation_listing_is_individual_and_display_safe(tmp_path):
     assert rows[0]["local_id"] == first
     assert "session_id" not in rows[0]
     assert "sensitive-session-id" not in json.dumps(rows)
+
+
+def test_imported_html_urls_and_unicode_controls_stay_inert_and_visible(tmp_path):
+    app = QApplication.instance() or QApplication([])
+    experience, observation_id, _, _ = seed_observation(tmp_path)
+    card = exported(experience, observation_id)
+    untrusted_text = '<img src=x onerror=execute()> https://example.invalid bidi\u202etxt\u202c zero\u200b'
+    card["task"]["description"] = untrusted_text
+    rehash(card)
+    community = CommunityEvidenceStore(tmp_path / "community.sqlite3")
+    assert community.import_card(card) == "IMPORTED"
+    panel = CommunityCardsPanel(experience, community)
+    panel.card_table.selectRow(0)
+    shown = panel.card_detail.toPlainText()
+    assert isinstance(panel.card_detail, QPlainTextEdit)
+    assert "<img src=x onerror=execute()>" in shown
+    assert "https://example.invalid" in shown
+    assert "⟦U+202E⟧" in shown and "⟦U+202C⟧" in shown and "⟦U+200B⟧" in shown
+    assert "\u202e" not in shown and "\u202c" not in shown and "\u200b" not in shown
+    assert community.get_card(card["card_id"])["card"]["task"]["description"] == untrusted_text
+    panel.close()
+    app.processEvents()
 
 
 def test_main_window_has_a_separate_community_cards_panel(tmp_path):
