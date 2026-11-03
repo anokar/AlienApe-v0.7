@@ -79,6 +79,8 @@ async def execute_project(agent, raw_plan, root, goal):
             else:
                 item.write_status = 'SUCCESS'
                 item.verification_status = getattr(verification, 'verification_status', 'NOT_RUN') if verification else 'NOT_RUN'
+                if item.verification_status in ('FAIL', 'ERROR', 'TIMEOUT', 'ABORTED'):
+                    item.failure_attribution = str(agent.last_failure_type)
         except Exception:
             item.write_status = 'FAILURE'
             item.failure_attribution = str(agent.last_failure_type)

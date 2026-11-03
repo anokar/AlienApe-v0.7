@@ -635,7 +635,14 @@ class Agent:
                 return cached
         result = self.resources.cached_read(path) if name == "read_file" else None
         if result is None:
-            result = self.diagnostic_trace.dispatch(self.tools.execute,name,arguments) if self.diagnostic_trace else self.tools.execute(name, arguments)
+            try:
+                result = self.diagnostic_trace.dispatch(self.tools.execute,name,arguments) if self.diagnostic_trace else self.tools.execute(name, arguments)
+            except OSError as exc:
+                if name=='write_file':
+                    self.last_failure_type=FailureType.TOOL_FAILURE
+                    self.dependency_failure=FailureType.TOOL_FAILURE
+                    self.emit('FAILURE_CLASSIFIED',{'failure_type':'TOOL_FAILURE','subreason':'WRITE_IO_FAILURE','status':str(exc)[:300]})
+                raise
             if name=='write_file':
                 after=path.read_bytes();self.emit('PROPOSAL_WRITTEN_HASH',{'path':arguments['path'],'written_bytes_sha256':hashlib.sha256(after).hexdigest()});diff=''.join(difflib.unified_diff(before.decode('utf-8',errors='replace').splitlines(keepends=True),after.decode('utf-8',errors='replace').splitlines(keepends=True),fromfile='before/'+arguments['path'],tofile='after/'+arguments['path']))
                 if before_hash!=hashlib.sha256(after).hexdigest():self.changed_paths.append(arguments['path'])

@@ -201,9 +201,11 @@ def test_changed_test_files_are_never_chosen_as_source_targets(tmp_path):
 def test_ui_shows_verification_and_execution_uses_existing_permissions(tmp_path):
     from test_gui import app
     from alienape.dialogs import PermissionDialog
+    from PyQt6.QtWidgets import QWidget
     qt=app.__wrapped__()
-    dialog=PermissionDialog({'name':'verify_python_tests','arguments':{},'path':str(tmp_path)})
-    assert 'Verifikation' in dialog.windowTitle();dialog.close()
+    parent=QWidget();parent.settings=Settings();parent.settings.ui.language='de'
+    dialog=PermissionDialog({'name':'verify_python_tests','arguments':{},'path':str(tmp_path)},parent)
+    assert 'Verifikation' in dialog.windowTitle();dialog.close();parent.close()
 
 def test_model_has_no_verifier_or_shell_tool(tmp_path):
     from alienape.tools import ToolRegistry
