@@ -26,6 +26,8 @@ from .routed_agent import RoutedAgent
 from .model_dialogs import ModelsDialog
 from .experience import ExperienceStore
 from .experience_ui import ExperiencePanel
+from .community_evidence import CommunityEvidenceStore
+from .community_ui import CommunityCardsPanel
 from .ui_theme import DisplayLabel, palette, stylesheet
 from .diagnostics import DiagnosticStore
 from .i18n import localize
@@ -45,6 +47,7 @@ class MainWindow(QMainWindow):
         self.event_log = EventLog(self.directory / "logs")
         self.diagnostics=DiagnosticStore(self.directory/'diagnostics')
         self.experience = ExperienceStore(self.directory / 'model_experience.sqlite3')
+        self.community_evidence = CommunityEvidenceStore(self.directory / 'community_evidence.sqlite3')
         self.last_experience_id = None
         self.setWindowTitle(f"AlienApe · Desktop Agent v{__version__}")
         self.resize(1320, 920)
@@ -239,6 +242,8 @@ class MainWindow(QMainWindow):
         self.build_activity_tab()
         self.experience_panel = ExperiencePanel(self)
         self.tabs.addTab(self.experience_panel, 'Modellerfahrung')
+        self.community_cards_panel = CommunityCardsPanel(self.experience, self.community_evidence)
+        self.tabs.addTab(self.community_cards_panel, 'Community Cards')
         footer = QFrame()
         footer.setObjectName("statusbar")
         footer_layout = QHBoxLayout(footer)
