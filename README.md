@@ -1,6 +1,8 @@
 # AlienApe
 
-**Development branch: v0.7.2 is work in progress and has not been released.** Project Builder and model qualification are experimental; field tests have exposed protocol reliability limitations.
+**Development status: v0.7.2 has not been released; v0.7.3 is under development.** Project Builder, model qualification and Community Cards are experimental WIP features; Project Builder research has documented protocol-reliability limitations.
+
+Community Cards provide an offline JSON exchange for individual local Experience observations. The workflow has been smoke-tested with synthetic data. Imported cards remain `UNVERIFIED` and do not influence routing. This is not a model benchmark or global ranking system. See the [Community Cards WIP guide](docs/COMMUNITY_CARDS.md).
 
 AlienApe is an experimental local AI controller for Windows. It coordinates local language models, controlled file operations, permissions, task routing, verification and local model experience through a native PyQt6 interface. It is local-first; DE/EN/FR localization is partial and experimental. Model-generated output is not automatically translated, and rough edges are expected.
 
@@ -30,6 +32,7 @@ The onedir build is written to `dist/AlienApe/AlienApe.exe`. The optional `-RunT
 ## Further reading
 
 - [Architecture](docs/ARCHITECTURE.md)
+- [Community Cards WIP guide](docs/COMMUNITY_CARDS.md)
 - [AI handoff](docs/AI_HANDOFF.md)
 - [Prompt for your AI assistant](docs/USER_AI_PROMPT.md)
 - [Known limitations](KNOWN_LIMITATIONS.md)
