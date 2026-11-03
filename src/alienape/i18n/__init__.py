@@ -11,6 +11,7 @@ def effective_locale(language="system"):
     if language=="system":
         language=locale.getlocale()[0] or "en"
     base=language.replace("-","_").split("_")[0].lower()
+    base={"german":"de","english":"en","french":"fr"}.get(base,base)
     return base if base in {"de","en","fr"} else "en"
 
 def localize(message_id,language="system",**params):

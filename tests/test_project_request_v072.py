@@ -12,6 +12,15 @@ def test_non_project_request(text):
     assert project_request(text) is None
 
 
+@pytest.mark.parametrize('text',[
+    'The tests in this Python project are failing. Find the cause, fix the implementation, change only the necessary source file, and make the existing tests pass.',
+    'The tests in this Python project are failing. Find the cause, fix the implementation.',
+    'Refactor the implementation to remove duplicated logic. Do not change the tests.',
+])
+def test_existing_code_work_is_not_new_project_request(text):
+    assert project_request(text) is None
+
+
 def test_explicit_project_root():
     assert project_request('mach ein python projekt namens calculator mit test').root=='calculator'
     assert project_request('create a small site with html css and javascript in monkey-web').root=='monkey-web'

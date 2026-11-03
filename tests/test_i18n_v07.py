@@ -1,4 +1,5 @@
 import asyncio
+import locale
 import pytest
 from alienape.i18n import localize,effective_locale
 from alienape.agent import Agent
@@ -18,6 +19,20 @@ def test_delete_is_unsupported_in_all_locales(tmp_path,lang,needle):
 def test_fallback():
     assert effective_locale('fr-CA')=='fr' and effective_locale('xx')=='en'
     assert localize('NOT_A_REAL_KEY','fr')=='Message unavailable.'
+
+@pytest.mark.parametrize('system_locale,expected',[
+    ('German_Switzerland','de'),('de_CH','de'),
+    ('English_United States','en'),('en_US','en'),
+    ('French_France','fr'),('fr_FR','fr'),
+    ('Unknown_Region','en'),
+])
+def test_system_locale_names(system_locale,expected,monkeypatch):
+    monkeypatch.setattr(locale,'getlocale',lambda:(system_locale,'1252'))
+    assert effective_locale('system')==expected
+
+def test_explicit_language_overrides_system_locale(monkeypatch):
+    monkeypatch.setattr(locale,'getlocale',lambda:('German_Switzerland','1252'))
+    assert effective_locale('fr')=='fr'
 
 @pytest.mark.parametrize('lang',['de','en','fr'])
 def test_ui_language_does_not_change_intent(tmp_path,lang):

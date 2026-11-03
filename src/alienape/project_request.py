@@ -14,6 +14,9 @@ def project_request(text):
     if not isinstance(text, str) or len(text) > 8192:
         return None
     t = ' '.join(text.strip().split())
+    from .intents import information_need
+    if information_need(t) in {'DEBUG_EXISTING_CODE','REFACTOR_EXISTING_CODE','MODIFY_EXISTING_CODE'}:
+        return None
     if re.search(r'(?i)\b(?:do not|don.t|nicht|kein(?:e[nsrm]?)?|nur analysieren|read.only)\b',t):
         return None
     if not re.search(r'(?i)\b(?:mach\w*|erstel\w*|baue|build|create|make)\b',t):
