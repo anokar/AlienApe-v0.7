@@ -4,13 +4,13 @@
 
 - Status: source candidate prepared for review/upload, not released. v0.7.2 remains unreleased; v0.7.1 remains frozen.
 - Based on `wip/community-cards` at `684e4e021a480672e16f09ec70a02d3fd5436026`; the candidate adds a narrow intent fix, two isolated-installation tests, version 0.7.3 metadata, and updated release documentation.
-- User-run full test suite on the same source and test changes: **1,110 passed, 0 failed, 4 skipped**, Python 3.12.10, pytest 9.2.0, Godot 4.7.2 explicitly configured. The four skips were two Windows symlink-permission cases and two historical Experience fixture cases.
+- User-run full test suite for the candidate application and tests: **1,110 passed, 0 failed, 4 skipped in 104.25s**, Python 3.12.10, pytest 9.2.0, Godot 4.7.2 explicitly configured. The four skips were two Windows symlink-permission cases and two historical Experience fixture cases. This handoff-only update and its derived build ID came afterward; no application or test code changed.
 - Experience isolation was verified in separate processes across restarts with synthetic A1/B1 rows and separate `ALIENAPE_DATA_DIR` roots. No Community Card was imported during this test.
 - The Community Card two-installation UI roundtrip passed in the full suite: preview and explicit confirmation in A, manual import in B, `UNVERIFIED` storage, duplicate detection, no routing evidence, and unchanged local Experience in B. Fixtures are synthetic; publisher authenticity was not tested.
 - Community Cards are offline, one observation per JSON file, stored separately from local Experience, and never consumed by routing or GOOD_ENOUGH. They are unsigned and unverified; SHA-256 detects content changes but does not authenticate a publisher.
 - The narrow file-intent correction recognizes explicit write/save wording with a named parsed target; WriteScope remains controller-owned and exact. Educational `wie/how` requests stay read-only.
 - Model evidence is limited: DeepSeek Coder 6.7B FILE_CONTENT qualification was 4/5 over five calls; its FILE_PROPOSAL direct probe passed 1/3 protocol/target checks. All four configured profiles still have `code_generation=UNKNOWN` and `file_proposal=UNKNOWN`; no routing capability change is justified. The FILE_PROPOSAL probe did not preserve raw responses.
-- No compiled Windows binary is included. README documents source installation; the Windows onedir build is optional and belongs in a separate distribution. No tag, push, or release has occurred. The 1,110-test full-suite result predates the version/documentation-only edits in this candidate folder; the final candidate has not been rerun in this environment.
+- No compiled Windows binary is included. README documents source installation; the Windows onedir build is optional and belongs in a separate distribution. No tag, push, or release has occurred.
 
 AlienApe remains an experimental local-first controller. Capability is distinct from protocol adherence and quality; a successful write does not prove correctness. Memory, Session Context, local Experience, and Community Evidence remain separate concepts. No full operating-system sandbox exists, and localization remains partial/experimental.
 
@@ -19,7 +19,7 @@ AlienApe remains an experimental local-first controller. Capability is distinct 
 
 - The package and UI version metadata now identify the v0.7.3 source candidate, but no release tag or binary is prepared. README says the Windows onedir build is optional and separate from the source repository.
 - `src/alienape/build_identity.py` now has a v0.7.3 candidate identifier. `scripts/update_build_identity.py` reproduces it from Git-normalized blob IDs for tracked and non-ignored source files, excluding the identity file and `work/` artifacts. Rerun the helper after source edits and before a final distributable build.
-- The full suite result is from the same application/test changes, before version-only and documentation changes in this new candidate. Run the final candidate from its own `.venv` before uploading if final-tree test evidence is required.
+- The full suite was run from the candidate folder after its package version was set to 0.7.3. Afterwards, only this handoff text and the derived source-manifest ID changed.
 - Four known skips remain: two Windows symlink-permission cases and two unavailable historical fixture cases. They are documented limitations, not claimed passes.
 - Capability declarations remain UNKNOWN for the four configured local model profiles; the direct probes do not qualify them. No routing claims or model-name special cases were added.
 
