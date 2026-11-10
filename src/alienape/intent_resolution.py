@@ -121,6 +121,14 @@ class DeterministicIntentResolver:
         action=re.sub(r'^(?:hallo|hi|hey|hello)[,!]?\s+(?=(?:kanst|kannst|can|bitte|please|erstel|mach|create|make))','',action)
         create=bool(re.match(r'^'+prefix+r'(?:erstell\w*|erstel\w*|schreib\w*|create|write|mach\w*|make)\b',action)) or bool(re.match(r'^'+prefix+r'.{0,70}\b(?:python program\w*|text ?datei)\b.{0,30}\b(?:machen|erstel\w*)\b',action))
         create=create or bool(re.match(r'^'+prefix+r'(?:ein|eine|einen)\s+.{0,100}\b(?:anlegen|erstel\w*|machen)\b',action))
+        # Modal requests that explicitly write/save generated content to a
+        # named file are mutations too. Keep educational "how/wie" questions
+        # read-only; the target still comes only from the lexical path parser.
+        modal_file_write=False
+        if paths and re.match(r'^(?:(?:kannst|kanst)\s+du|can\s+you)\b',action):
+            write_verb=re.search(r'\b(?:schreib\w*|speicher\w*|write|save)\b',action)
+            modal_file_write=bool(write_verb and not re.search(r'\b(?:wie|how)\b',action[:write_verb.start()]))
+        create=create or modal_file_write
         if re.match(r'^'+prefix+r'(?:write|schreib\w*)\b',action) and not file_noun and not re.search(r'\b(?:new|neu\w*|containing)\b',lower):create=False
         directory=bool(re.search(r'\b(?:ordner|directory|folder)\b',lower))
         from .create_syntax import file_arguments,directory_argument,content_clause

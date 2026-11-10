@@ -78,6 +78,34 @@ def test_exact_new_paths(tmp_path):
     assert scope.allow_new_file and scope.allowed_paths==['utils/slugify.py','tests/test_slugify.py']
     assert not scope.permits('extra.py',Workspace(tmp_path))
 
+@pytest.mark.parametrize('prompt,path',[
+    ('Kannst du mir ein Python Hello World schreiben und in hello.py speichern.','hello.py'),
+    ('Kannst du mir ein Hello-World-Programm in hello.py schreiben.','hello.py'),
+    ('Can you write a Hello World program in hello.py?','hello.py'),
+    ('Kannst du das in index.html schreiben?','index.html')])
+def test_modal_file_write_requests_get_exact_create_scope(tmp_path,prompt,path):
+    a,b=make(tmp_path)
+    a.prepare_task(prompt)
+    assert a.intent_resolution.intent_id=='CREATE_FILE'
+    assert a.intent_resolution.mutation_requested
+    assert a.intent_resolution.output_paths==(path,)
+    assert not a.write_scope.read_only
+    assert a.write_scope.allowed_paths==[path] and a.write_scope.deny_other_paths
+    assert a.write_scope.permits(path,a.workspace)
+    assert not a.write_scope.permits('extra.py',a.workspace)
+    assert not b.requests and a.resources.counters.model_calls==0
+
+@pytest.mark.parametrize('prompt',[
+    'Wie schreibe ich Hello World in Python?',
+    'Kannst du mir erklären, wie ich ein Hello World in hello.py schreibe?'])
+def test_educational_write_questions_stay_read_only(tmp_path,prompt):
+    a,b=make(tmp_path)
+    a.prepare_task(prompt)
+    assert a.intent_resolution.intent_id!='CREATE_FILE'
+    assert not a.intent_resolution.mutation_requested
+    assert a.write_scope.read_only
+    assert not b.requests and a.resources.counters.model_calls==0
+
 @pytest.mark.parametrize('mode',['none','native'])
 def test_new_plan_precedes_model_and_is_finite(tmp_path,mode):
     events=[];a,b=make(tmp_path,mode,events=events)

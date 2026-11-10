@@ -1,6 +1,6 @@
 # AlienApe
 
-**Development status: v0.7.2 has not been released; v0.7.3 is under development.** Project Builder, model qualification and Community Cards are experimental WIP features; Project Builder research has documented protocol-reliability limitations.
+**Development status: v0.7.3 source candidate; not released. v0.7.2 also remains unreleased, and v0.7.1 is frozen.** Project Builder, model qualification and Community Cards are experimental; Project Builder research documents protocol-reliability limits.
 
 Community Cards provide an offline JSON exchange for individual local Experience observations. The workflow has been smoke-tested with synthetic data. Imported cards remain `UNVERIFIED` and do not influence routing. This is not a model benchmark or global ranking system. See the [Community Cards WIP guide](docs/COMMUNITY_CARDS.md).
 
@@ -18,14 +18,15 @@ The source code is licensed under 0BSD; see [LICENSE](LICENSE). The optional mas
 
 ## Windows development and build
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[test,build]"
+```cmd
+py -3.12 -m venv .venv
+call .venv\Scripts\activate.bat
+python -m pip install -e ".[test]"
 python -m pytest
 python -m alienape
-.\scripts\build_windows.ps1
 ```
+
+A compiled Windows build is optional for a source-code upload. To build it, install the `build` extra (`python -m pip install -e ".[test,build]"`) and run `powershell -NoProfile -File scripts\build_windows.ps1`.
 
 The onedir build is written to `dist/AlienApe/AlienApe.exe`. The optional `-RunTests` switch runs tests first with isolated runtime data. Two historical migration tests require the external authoritative fixture documented above. No model is downloaded. The source repository contains code, tests, documentation, resources and the build definition; an optional compiled build belongs in a separate release, never in Git. Runtime Memory, Experience, configuration and diagnostics remain outside the source/binary bundle.
 

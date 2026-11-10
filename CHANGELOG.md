@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.3 — in development (not released)
+
+- Add offline Community Cards for one-observation export and import, with a reviewable privacy preview, strict validation, separate `UNVERIFIED` Community Evidence storage, duplicate detection, and no routing effect.
+- Harden display of imported untrusted card text.
+- Correct Windows `German_Switzerland` locale recognition and classify explicit named-file write requests with an exact controller-owned WriteScope; educational questions remain read-only.
+- Add isolated two-installation Experience and Community Card regression tests.
+- Keep Project Builder, model qualification, and DE/EN/FR localization experimental; see Known Limitations and the Community Cards guide.
+
+
 ## 0.7.1
 
 Explicit project Memory work, deterministic English remember and bounded single-record forget.

@@ -1,16 +1,28 @@
 # AI handoff
 
-## Current v0.7.3 development state
+## Current v0.7.3 source candidate
 
-- Verified branch: `wip/community-cards`.
-- Source baseline before documentation-only updates: `de98823ae982fc9d55fac57f9f2374fe77cf0abc`.
-- Previous v0.7.2 failure-containment checkpoint: `42a505dda0ebbd7eaa95e8947cf1960711363137`; v0.7.2 remains unreleased and v0.7.1 remains frozen.
-- Branch history after that checkpoint: locale/source-discovery fixes (`8679d56`), first Community Cards workflow (`ba94572`), and untrusted display hardening (`de98823`).
-- Latest full-suite evidence: 1,102 passed, 0 failed, 4 skipped. Skips were two unavailable historical Experience fixtures and two Windows symlink-permission cases. Godot 4.7.2 was explicitly configured and its security test ran.
-- The synthetic two-install offline Community Card smoke test passed: export preview and confirmation, separate import storage, preserved provenance, duplicate detection, hash-tamper rejection, and unchanged local Experience in the receiving installation. This says nothing about publisher authenticity.
-- Project Builder failure-containment tests cover `FORMAT_FAILURE`, `WRITE_FAILURE`, `VERIFICATION_FAILURE`, and `RESOURCE_OUTPUT_LIMIT`; the latest full suite passed these alongside the rest of the repository tests.
-- Community Card schema is 1.0.0. Imported cards are separate from local Experience, always `UNVERIFIED`, and have no routing/GOOD_ENOUGH effect. SHA-256 checks content integrity only.
-- `pyproject.toml` still reports package version 0.7.2 while the v0.7.3 development branch is in progress; do not describe this branch as a released 0.7.3 package.
+- Status: source candidate prepared for review/upload, not released. v0.7.2 remains unreleased; v0.7.1 remains frozen.
+- Based on `wip/community-cards` at `684e4e021a480672e16f09ec70a02d3fd5436026`; the candidate adds a narrow intent fix, two isolated-installation tests, version 0.7.3 metadata, and updated release documentation.
+- User-run full test suite on the same source and test changes: **1,110 passed, 0 failed, 4 skipped**, Python 3.12.10, pytest 9.2.0, Godot 4.7.2 explicitly configured. The four skips were two Windows symlink-permission cases and two historical Experience fixture cases.
+- Experience isolation was verified in separate processes across restarts with synthetic A1/B1 rows and separate `ALIENAPE_DATA_DIR` roots. No Community Card was imported during this test.
+- The Community Card two-installation UI roundtrip passed in the full suite: preview and explicit confirmation in A, manual import in B, `UNVERIFIED` storage, duplicate detection, no routing evidence, and unchanged local Experience in B. Fixtures are synthetic; publisher authenticity was not tested.
+- Community Cards are offline, one observation per JSON file, stored separately from local Experience, and never consumed by routing or GOOD_ENOUGH. They are unsigned and unverified; SHA-256 detects content changes but does not authenticate a publisher.
+- The narrow file-intent correction recognizes explicit write/save wording with a named parsed target; WriteScope remains controller-owned and exact. Educational `wie/how` requests stay read-only.
+- Model evidence is limited: DeepSeek Coder 6.7B FILE_CONTENT qualification was 4/5 over five calls; its FILE_PROPOSAL direct probe passed 1/3 protocol/target checks. All four configured profiles still have `code_generation=UNKNOWN` and `file_proposal=UNKNOWN`; no routing capability change is justified. The FILE_PROPOSAL probe did not preserve raw responses.
+- No compiled Windows binary is included. README documents source installation; the Windows onedir build is optional and belongs in a separate distribution. No tag, push, or release has occurred. The 1,110-test full-suite result predates the version/documentation-only edits in this candidate folder; the final candidate has not been rerun in this environment.
+
+AlienApe remains an experimental local-first controller. Capability is distinct from protocol adherence and quality; a successful write does not prove correctness. Memory, Session Context, local Experience, and Community Evidence remain separate concepts. No full operating-system sandbox exists, and localization remains partial/experimental.
+
+
+## Remaining release review
+
+- The package and UI version metadata now identify the v0.7.3 source candidate, but no release tag or binary is prepared. README says the Windows onedir build is optional and separate from the source repository.
+- `src/alienape/build_identity.py` now has a v0.7.3 candidate identifier. `scripts/update_build_identity.py` reproduces it from Git-normalized blob IDs for tracked and non-ignored source files, excluding the identity file and `work/` artifacts. Rerun the helper after source edits and before a final distributable build.
+- The full suite result is from the same application/test changes, before version-only and documentation changes in this new candidate. Run the final candidate from its own `.venv` before uploading if final-tree test evidence is required.
+- Four known skips remain: two Windows symlink-permission cases and two unavailable historical fixture cases. They are documented limitations, not claimed passes.
+- Capability declarations remain UNKNOWN for the four configured local model profiles; the direct probes do not qualify them. No routing claims or model-name special cases were added.
+
 
 Historical FILE_CONTENT context findings remain in [the audit note](FILE_CONTENT_CONTEXT_AUDIT.md). DeepSeek Coder 6.7B reached 4/5 on the concise fixed qualification but repeatedly produced `FORMAT_FAILURE` in the richer Project Builder context; the packet remained within its configured context budget. The purpose-line-only effect remains inconclusive, and the three parser-replayed qualification responses were byte-identical. Fingerprint consistency was checked, but historical model-binary provenance remains partly open. Archived raw captures and databases remain outside Git. Preserve these distinctions and do not claim broad model reliability from them.
 
