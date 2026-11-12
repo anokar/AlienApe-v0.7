@@ -72,8 +72,9 @@ def file_arguments(task,python=False):
     if named and not paths:
         name=named[1];paths=(name[1:-1] if name[0] in QUOTES else name,)
     # Existing generated-code request may place "as foo.py" after its description.
-    if not paths and python and body is not None and (not body or body[0] not in QUOTES):
-        tail=re.search(r'\b(?:als|alls|as|in)\s+([\w./\\:-]+\.py)(?:\s+erstel\w*)?[.!?]?\s*$',body,re.I)
+    if not paths and body is not None and (not body or body[0] not in QUOTES):
+        from .routing import CODE_EXTENSIONS
+        tail=re.search(r'\b(?:als|alls|as|in)\s+([\w./\\:-]+\.(?:'+CODE_EXTENSIONS+r'))(?:\s+erstel\w*)?[.!?]?\s*$',body,re.I)
         if tail:paths=(tail[1],);literal=None
     if len(paths)>1:return (),None,'Bitte genau einen eindeutigen neuen Dateipfad nennen.'
     location=re.search(r'\b(?:im|in|unter|inside)\s+(?:ordner|folder|directory)\s+([\w/\\.-]+)',header,re.I)
@@ -88,7 +89,8 @@ def file_arguments(task,python=False):
         paths=('module.py' if python else 'document.txt',)
     if body is None and re.search(r'\b(?:leere?|lere|empty|blank)\b',header,re.I):literal=''
     # Non-text code is generated normally unless the user explicitly requested empty.
-    if paths[0].casefold().endswith('.py') and body is not None:literal=None
+    from .languages import SOURCE_SUFFIXES
+    if any(paths[0].casefold().endswith(suffix) for suffix in SOURCE_SUFFIXES) and body is not None:literal=None
     return paths,literal,''
 
 

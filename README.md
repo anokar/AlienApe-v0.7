@@ -1,10 +1,12 @@
 # AlienApe
 
-**Development status: v0.7.3 source candidate; not released. v0.7.2 also remains unreleased, and v0.7.1 is frozen.** Project Builder, model qualification and Community Cards are experimental; Project Builder research documents protocol-reliability limits.
+**Beta candidate: 0.7.3b1. This checkout is prepared for review; no tag, push, binary, or public release has been made.** v0.7.2 also remains unreleased, and v0.7.1 is frozen. Project Builder, model qualification, and Community Cards remain experimental; Project Builder research documents protocol-reliability limits.
 
 Community Cards provide an offline JSON exchange for individual local Experience observations. The workflow has been smoke-tested with synthetic data. Imported cards remain `UNVERIFIED` and do not influence routing. This is not a model benchmark or global ranking system. See the [Community Cards WIP guide](docs/COMMUNITY_CARDS.md).
 
-AlienApe is an experimental local AI controller for Windows. It coordinates local language models, controlled file operations, permissions, task routing, verification and local model experience through a native PyQt6 interface. It is local-first; DE/EN/FR localization is partial and experimental. Model-generated output is not automatically translated, and rough edges are expected.
+AlienApe is an experimental local AI controller for Windows. It coordinates local language models, controlled file operations, permissions, task routing, verification and local model experience through a native PyQt6 interface. The main workspace, settings (including Semantic Resolver), permission prompts, and Community Cards controls are localized in German, English, and French. Model-profile and Experience screens, plus some dynamic activity and controller status text, still contain German text. Model prompts ask for explanations in the language of the current request while preserving literal content and protocol fields; language quality depends on the configured model.
+
+Code generation and source discovery recognize common programming languages and file extensions (including Python, JavaScript/TypeScript, C/C++, Java, C#, Rust, Go, Ruby, PHP, Swift, Kotlin, shell, SQL and others). This recognition does not promise model competence for every language. Automatic code verification remains limited to the existing Python and Godot checks; other languages are explicitly reported as not verified. AlienApe does not run arbitrary compilers or shell commands.
 
 **Early experimental software. Expect rough edges. Do not trust it with irreplaceable data without backups.**
 

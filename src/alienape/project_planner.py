@@ -30,7 +30,7 @@ async def propose_plan(agent, request):
     packet={'goal':request.goal[:4000],'project_label':request.root,'language_hint':request.language_hint,'relevant_memory':memories,
             'limits':{'max_files':MAX_FILES,'max_directories':MAX_DIRECTORIES,'max_mutations':MAX_MUTATIONS,'max_path_depth':MAX_PATH_DEPTH},
             'schema':{'files':[{'path':'relative/path','purpose':'brief purpose','language':'language','depends_on':['relative/path']}]}}
-    messages=transport_redactor.clean([{'role':'system','content':'Propose only a small project plan. Return one JSON object following the exact schema; no Markdown, prose, extra fields or actions. All file paths must be relative. No tools.'},{'role':'user','content':json.dumps(packet,ensure_ascii=False)}])
+    messages=transport_redactor.clean([{'role':'system','content':'Propose only a small project plan. Return one JSON object following the exact schema; no Markdown, prose, extra fields or actions. Use the language of the user request for natural-language purpose fields. Preserve schema keys and paths. All file paths must be relative. No tools.'},{'role':'user','content':json.dumps(packet,ensure_ascii=False)}])
     if size(messages)>16000:raise PlannerUnavailable('Planning context exceeds limit')
     agent.check_stop()
     if agent.resources.counters.model_calls>=agent.model_call_limit:raise PlannerUnavailable('Model call budget exhausted')

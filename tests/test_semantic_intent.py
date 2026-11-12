@@ -240,6 +240,17 @@ def test_settings_semantic_ui_no_automatic_probe(tmp_path):
     d.close()
 
 
+def test_legacy_multilingual_setting_is_preserved_without_a_noop_toggle():
+    from PyQt6.QtWidgets import QApplication
+    from alienape.dialogs import SettingsDialog
+    app=QApplication.instance() or QApplication([])
+    settings=Settings();settings.semantic_resolver.declared_multilingual=True
+    dialog=SettingsDialog(settings)
+    assert not hasattr(dialog.semantic_widget,'multilingual')
+    assert dialog.semantic_widget.values().declared_multilingual is True
+    dialog.close()
+
+
 def test_pending_completion_is_authoritative_and_skips_semantics(tmp_path):
     fixture=Embeddings(I.CAPABILITY_QUERY);session=Session()
     first=make(tmp_path,fixture.resolver(),session=session)
@@ -310,7 +321,8 @@ def test_settings_semantic_timeout_persisted_and_loaded(tmp_path,seconds):
     settings=Settings();dialog=SettingsDialog(settings)
     dialog.show();dialog.semantic_toggle.setChecked(True);app.processEvents()
     spin=dialog.semantic_widget.timeout
-    assert spin.isVisible() and spin.accessibleName()=='Timeout (Sekunden)'
+    from alienape.i18n import localize
+    assert spin.isVisible() and spin.accessibleName()==localize('SEMANTIC_TIMEOUT',settings.ui.language)
     assert spin.value()==5.0 and spin.minimum()==0.25 and spin.maximum()==20.0
     spin.setValue(seconds);dialog.save()
     assert dialog.result()==dialog.DialogCode.Accepted

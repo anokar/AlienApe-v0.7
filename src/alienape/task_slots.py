@@ -4,6 +4,7 @@ from enum import StrEnum
 import hashlib,re,time
 from .intent_resolution import IntentID as I,IntentResolution
 from .security import redactor,transport_redactor
+from .languages import LANGUAGE_NAMES, LANGUAGE_SUFFIXES
 
 MAX_TEXT=8192
 MAX_ARTIFACT=32768
@@ -58,7 +59,7 @@ class LastGeneratedArtifact:
     def metadata(self):return {'present':True,'type':self.type,'language':self.language,'source_turn_id':self.source_turn_id,'bytes':len(self.content.encode()),'content_sha256':hashlib.sha256(self.content.encode()).hexdigest()}
 
 FOLLOWUPS={'was','warum','wieso','wieso nicht','bei was','was meinst du','what','why','what do you mean'}
-CODE_SUFFIXES={'.zig':'zig','.c':'c','.py':'python','.cpp':'cpp','.cc':'cpp','.cxx':'cpp','.html':'html','.htm':'html','.gd':'gdscript','.js':'javascript','.ts':'typescript'}
+CODE_SUFFIXES=LANGUAGE_SUFFIXES
 
 def short_question(task):return ' '.join(task.casefold().strip().rstrip('?!.,').split()) in FOLLOWUPS
 
@@ -67,7 +68,11 @@ def language_hint(task,paths=()):
         suffix='.'+p.rsplit('.',1)[-1].casefold() if '.' in p else ''
         if suffix in CODE_SUFFIXES:return CODE_SUFFIXES[suffix]
     text=task.casefold()
-    return next((lang for pattern,lang in [(r'(?<!\w)\.py\s+datei\b','python'),(r'\bpython\b','python'),(r'(?:c\+\+|\bcpp\b)','cpp'),(r'\bC\s+(?:funktion|function)\b','c'),(r'\bzig\b','zig'),(r'\bhtml\b','html'),(r'\b(?:gdscript|godot)\b','gdscript')] if re.search(pattern,text)),'')
+    if re.search(r'(?<!\w)\.py\s+datei\b',text):return 'python'
+    aliases={'cpp':'cpp','c++':'cpp','c#':'csharp','f#':'fsharp','godot':'gdscript'}
+    for alias,language in aliases.items():
+        if re.search(r'(?<!\w)'+re.escape(alias)+r'(?!\w)',text):return language
+    return next((name for name in LANGUAGE_NAMES if re.search(r'(?<!\w)'+re.escape(name)+r'(?!\w)',text)), '')
 
 
 def lexical_paths(text):
@@ -153,7 +158,8 @@ def slots_for(task,legacy,*,suggested=None):
         intent=I.CREATE_FILE
         # Filename suffix after the generation description, explicitly marked as a name.
         if not paths and body is not None and not body.startswith(('"',"'",'`','„')):
-            tail=re.search(r'\b(?:als|alls|as|in|namens|datein namen)\s+([\w./\\:-]+\.(?:py|cpp|html|txt|md|gd|js|ts))\s*[.!?]?$',body,re.I)
+            from .routing import FILE_EXTENSIONS
+            tail=re.search(r'\b(?:als|alls|as|in|namens|datein namen)\s+([\w./\\:-]+\.(?:'+FILE_EXTENSIONS+r'))\s*[.!?]?$',body,re.I)
             if tail:paths=(tail[1],)
         missing=[];ambiguous=[];literal=None;mode=ContentMode.UNKNOWN;generation=''
         if not paths:missing.append('target_path')
@@ -323,10 +329,15 @@ def remember_artifact(agent,answer):
     state=agent.session.task_state;r=agent.intent_resolution
     if not r or r.intent_id not in {I.EXPLAIN_CODE,I.CODE_GENERATION_RESPONSE} or agent.resources.counters.model_calls<=getattr(agent,'turn_model_calls_before',0) or r.ambiguity_reason or agent.last_failure_type.value not in {'SUCCESS','UNKNOWN'}:return
     value=getattr(agent,'last_response',{}).get('content') or answer
-    match=re.search(r'```(python|py|cpp|c\+\+|c|html|gdscript|javascript|typescript)?\s*\n([\s\S]*?)\n?```',value,re.I)
+    match=re.search(r'```([\w+#.-]*)\s*\n([\s\S]*?)\n?```',value,re.I)
     lang=language_hint(agent.current_task)
-    if match:lang={'py':'python','c++':'cpp'}.get((match[1] or lang).casefold(),(match[1] or lang).casefold());value=match[2]
-    elif not (lang=='python' and re.match(r'\s*(?:def |class |print\()',value) or lang=='html' and value.lstrip().startswith('<') or lang=='cpp' and '#include' in value or lang=='c' and re.match(r'\s*(?:(?:int|void|float|double|char|long)\s+\w+\s*\([^;{}]*\)\s*\{)',value)):return
+    if match:
+        fence_language=match[1].casefold()
+        lang={'py':'python','c++':'cpp','c#':'csharp','f#':'fsharp'}.get(fence_language,fence_language or lang)
+        value=match[2]
+    else:
+        code_shape=bool(re.search(r'[{};=<>]|=>|->|\b(?:def|class|function|func|fn|const|let|var|import|using|package|return|print|puts|echo)\b|\bconsole\.log\s*\(',value,re.I))
+        if not (lang and code_shape):return
     if not value or len(value.encode())>MAX_ARTIFACT:return
     value=transport_redactor.text(value)
     artifact=LastGeneratedArtifact('code',lang,value,agent.task_id,state.continuity_turn,time.monotonic());state.last_generated_artifact=artifact

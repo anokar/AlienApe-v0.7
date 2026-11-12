@@ -38,6 +38,9 @@ def task_category(task, task_type=None):
             return TaskCategory.CODE_REVIEW
         if re.search(r'\b(python|py)\b', text):
             return TaskCategory.PYTHON_DEBUG if re.search(r'\b(debug\w*|fehler\w*|bug\w*|reparier\w*|fix\w*)\b', text) else TaskCategory.PYTHON_CODING
+        from .languages import LANGUAGE_NAMES
+        if any(re.search(r'(?<!\w)'+re.escape(name)+r'(?!\w)',text) for name in LANGUAGE_NAMES) or re.search(r'\b(create|make|write|implement|add|programmiere|erstelle|schreib\w*)\b',text):
+            return TaskCategory.CODE_GENERATION
         return TaskCategory.CODE_REVIEW
     if task_type == TaskType.REASONING_TASK:
         return TaskCategory.PLANNING if re.search(r'\b(plan\w*)\b', text) else TaskCategory.REASONING

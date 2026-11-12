@@ -13,6 +13,7 @@ from .community_evidence import (
     MAX_CARD_BYTES, CardValidationError, CommunityEvidenceStore,
     export_local_observation, list_local_observations, serialize_card,
 )
+from .i18n import localize
 
 
 def _display_safe(value):
@@ -32,36 +33,36 @@ def _display_safe(value):
 
 
 class ExportObservationDialog(QDialog):
-    def __init__(self, experience_store, local_id, parent=None):
+    def __init__(self, experience_store, local_id, parent=None, language="system"):
         super().__init__(parent)
+        self.language=language
         self.experience_store = experience_store
         self.local_id = local_id
         self.card = None
-        self.setWindowTitle("Community Card exportieren")
+        self.setWindowTitle(localize("COMMUNITY_EXPORT_TITLE",language))
         self.resize(720, 680)
         layout = QVBoxLayout(self)
         layout.addWidget(QLabel(
-            "Prüfe und verallgemeinere die Beschreibung. Es werden keine Prompts, Antworten, "
-            "Dateiinhalte, lokalen Pfade oder Endpunkte exportiert. Die Karte bleibt unverified."
+            localize("COMMUNITY_EXPORT_NOTE",language)
         ))
         form = QFormLayout()
-        self.description = QLineEdit("Beobachtung zu einer lokalen Aufgabe")
+        self.description = QLineEdit(localize("COMMUNITY_DESCRIPTION_DEFAULT",language))
         self.description.setMaxLength(240)
         self.limitations = QLineEdit()
         self.limitations.setMaxLength(500)
-        form.addRow("Allgemeine Beschreibung", self.description)
-        form.addRow("Bekannte Einschränkungen", self.limitations)
+        form.addRow(localize("COMMUNITY_DESCRIPTION",language), self.description)
+        form.addRow(localize("COMMUNITY_LIMITATIONS",language), self.limitations)
         layout.addLayout(form)
         self.preview = QPlainTextEdit()
         self.preview.setReadOnly(True)
-        self.preview.setPlaceholderText("Die privacy-geprüfte Exportvorschau erscheint hier.")
+        self.preview.setPlaceholderText(localize("COMMUNITY_PREVIEW",language))
         layout.addWidget(self.preview, 1)
-        self.confirm = QCheckBox("Ich habe die Vorschau geprüft und bestätige den Export dieser Karte.")
+        self.confirm = QCheckBox(localize("COMMUNITY_CONFIRM",language))
         layout.addWidget(self.confirm)
         buttons = QHBoxLayout()
-        self.export_button = QPushButton("JSON speichern …")
+        self.export_button = QPushButton(localize("COMMUNITY_SAVE_JSON",language))
         self.export_button.setEnabled(False)
-        cancel = QPushButton("Abbrechen")
+        cancel = QPushButton(localize("DIALOG_CANCEL",language))
         buttons.addStretch()
         buttons.addWidget(cancel)
         buttons.addWidget(self.export_button)
@@ -82,7 +83,7 @@ class ExportObservationDialog(QDialog):
             self.preview.setPlainText(json.dumps(_display_safe(self.card), ensure_ascii=False, sort_keys=True, indent=2))
         except (CardValidationError, ValueError) as exc:
             self.card = None
-            self.preview.setPlainText(f"Export nicht möglich: {exc}")
+            self.preview.setPlainText(localize("COMMUNITY_EXPORT_FAILED",self.language,error=str(exc)))
         self.update_enabled()
 
     def update_enabled(self, *_):
@@ -92,7 +93,7 @@ class ExportObservationDialog(QDialog):
         if self.card is None or not self.confirm.isChecked():
             return
         destination, _ = QFileDialog.getSaveFileName(
-            self, "Community Card speichern", "community-card.json", "JSON (*.json)"
+            self, localize("COMMUNITY_CARD_SAVE",self.language), "community-card.json", "JSON (*.json)"
         )
         if not destination:
             return
@@ -111,32 +112,32 @@ class ExportObservationDialog(QDialog):
 
 
 class CommunityCardsPanel(QWidget):
-    def __init__(self, experience_store, community_store: CommunityEvidenceStore, parent=None):
+    def __init__(self, experience_store, community_store: CommunityEvidenceStore, parent=None, language="system"):
         super().__init__(parent)
+        self.language=language
         self.experience_store = experience_store
         self.community_store = community_store
         layout = QVBoxLayout(self)
         layout.addWidget(QLabel(
-            "Offline-Austausch einzelner, lokal beobachteter Ergebnisse. Importierte Karten sind "
-            "unverified, verändern die lokale Experience nicht und beeinflussen keine Modellauswahl."
+            localize("COMMUNITY_PANEL_NOTE",language)
         ))
         self.splitter = QSplitter(Qt.Orientation.Vertical)
         layout.addWidget(self.splitter, 1)
 
         local_page = QWidget()
         local_layout = QVBoxLayout(local_page)
-        local_layout.addWidget(QLabel("Lokale Beobachtungen · nur einzeln und nach Vorschau exportieren"))
+        local_layout.addWidget(QLabel(localize("COMMUNITY_LOCAL_ROWS",language)))
         self.local_table = QTableWidget(0, 6)
-        self.local_table.setHorizontalHeaderLabels(["Zeit", "Modell", "Kategorie", "Vertrag", "Quelle", "Aufgabenqualität"])
+        self.local_table.setHorizontalHeaderLabels([localize(k,language) for k in ["COMMUNITY_OBSERVED_AT","COMMUNITY_MODEL","COMMUNITY_CATEGORY","COMMUNITY_CONTRACT","COMMUNITY_SOURCE","COMMUNITY_QUALITY"]])
         self.local_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.local_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.local_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.local_table.horizontalHeader().setStretchLastSection(True)
         local_layout.addWidget(self.local_table, 1)
         actions = QHBoxLayout()
-        self.export_button = QPushButton("Ausgewählte Beobachtung prüfen und exportieren …")
+        self.export_button = QPushButton(localize("COMMUNITY_EXPORT_SELECTED",language))
         self.export_button.setEnabled(False)
-        refresh_local = QPushButton("Aktualisieren")
+        refresh_local = QPushButton(localize("COMMUNITY_REFRESH",language))
         actions.addWidget(refresh_local)
         actions.addStretch()
         actions.addWidget(self.export_button)
@@ -146,15 +147,15 @@ class CommunityCardsPanel(QWidget):
         cards_page = QWidget()
         cards_layout = QVBoxLayout(cards_page)
         card_actions = QHBoxLayout()
-        card_actions.addWidget(QLabel("Importierte Community Cards · immer UNVERIFIED"))
+        card_actions.addWidget(QLabel(localize("COMMUNITY_EXPORTED_ROWS",language)))
         card_actions.addStretch()
-        self.import_button = QPushButton("JSON importieren …")
+        self.import_button = QPushButton(localize("COMMUNITY_IMPORT_JSON",language))
         card_actions.addWidget(self.import_button)
-        refresh_cards = QPushButton("Aktualisieren")
+        refresh_cards = QPushButton(localize("COMMUNITY_REFRESH",language))
         card_actions.addWidget(refresh_cards)
         cards_layout.addLayout(card_actions)
         self.card_table = QTableWidget(0, 5)
-        self.card_table.setHorizontalHeaderLabels(["Card ID", "Modell", "Kategorie", "Importiert", "Vertrauen"])
+        self.card_table.setHorizontalHeaderLabels([localize(k,language) for k in ["COMMUNITY_CARD_ID","COMMUNITY_MODEL","COMMUNITY_CATEGORY","COMMUNITY_IMPORTED_AT","COMMUNITY_TRUST"]])
         self.card_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.card_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.card_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -162,7 +163,7 @@ class CommunityCardsPanel(QWidget):
         cards_layout.addWidget(self.card_table, 1)
         self.card_detail = QPlainTextEdit()
         self.card_detail.setReadOnly(True)
-        self.card_detail.setPlaceholderText("Wähle eine importierte Karte aus, um ihre Felder anzusehen.")
+        self.card_detail.setPlaceholderText(localize("COMMUNITY_SELECT_CARD",language))
         cards_layout.addWidget(self.card_detail, 1)
         self.splitter.addWidget(cards_page)
 
@@ -180,7 +181,7 @@ class CommunityCardsPanel(QWidget):
         try:
             observations = list_local_observations(self.experience_store)
         except Exception as exc:
-            QMessageBox.warning(self, "Lokale Experience", str(exc))
+            QMessageBox.warning(self, localize("COMMUNITY_LOCAL_EXPERIENCE",self.language), str(exc))
             observations = []
         for observation in observations:
             row = self.local_table.rowCount()
@@ -202,12 +203,12 @@ class CommunityCardsPanel(QWidget):
         item = self.local_table.item(row, 0) if row >= 0 else None
         if item is None:
             return
-        dialog = ExportObservationDialog(self.experience_store, item.data(Qt.ItemDataRole.UserRole), self)
+        dialog = ExportObservationDialog(self.experience_store, item.data(Qt.ItemDataRole.UserRole), self, self.language)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            QMessageBox.information(self, "Community Card", "Die Community Card wurde gespeichert. Der Import bleibt ein separater, manueller Schritt.")
+            QMessageBox.information(self, localize("COMMUNITY_CARD_TITLE",self.language), localize("COMMUNITY_SAVED",self.language))
 
     def import_card(self):
-        filename, _ = QFileDialog.getOpenFileName(self, "Community Card importieren", "", "JSON (*.json)")
+        filename, _ = QFileDialog.getOpenFileName(self, localize("COMMUNITY_IMPORT",self.language), "", "JSON (*.json)")
         if not filename:
             return
         try:
@@ -215,12 +216,10 @@ class CommunityCardsPanel(QWidget):
                 raw = source.read(MAX_CARD_BYTES + 1)
             result = self.community_store.import_json(raw)
             self.refresh_cards()
-            QMessageBox.information(self, "Community Card", {
-                "IMPORTED": "Karte importiert und als UNVERIFIED gespeichert.",
-                "DUPLICATE": "Diese Karte ist bereits vorhanden.",
-            }[result])
+            message_id="COMMUNITY_IMPORT_SUCCESS" if result=="IMPORTED" else "COMMUNITY_IMPORT_DUPLICATE"
+            QMessageBox.information(self, localize("COMMUNITY_CARD_TITLE",self.language), localize(message_id,self.language))
         except (OSError, ValueError) as exc:
-            QMessageBox.warning(self, "Community Card Import", str(exc))
+            QMessageBox.warning(self, localize("COMMUNITY_IMPORT",self.language), str(exc))
 
     def refresh_cards(self):
         self.card_table.setRowCount(0)

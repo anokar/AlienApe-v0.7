@@ -32,4 +32,4 @@ def is_test_path(path):
     parts=path.replace('\\','/').casefold().split('/');name=parts[-1]
     return any(p in {'test','tests','spec','specs'} for p in parts[:-1]) or name.startswith(('test_','test.')) or name.endswith(('_test.py','.test.py','.spec.ts','.test.ts'))
 
-SOURCE_SUFFIXES={'.py','.gd','.js','.ts','.jsx','.tsx','.cs','.rs','.go','.lua','.c','.h','.cpp'}
+from .languages import SOURCE_SUFFIXES

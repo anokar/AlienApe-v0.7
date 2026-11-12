@@ -270,9 +270,10 @@ class OllamaBackend(OpenAICompatibleBackend):
         # Older instruct models cannot accept native tool roles. A strict data-only
         # envelope adapts their output into the SAME validated permission pipeline.
         instruction = ('Du bist ein lokaler Dateiassistent. Antworte ausschließlich mit einem JSON-Objekt. '
+            'For natural-language explanations, follow the language of the user\'s current request. Preserve literal text and code exactly. '
             'Wenn du eine Datei lesen/schreiben oder Informationen daraus brauchst, rufe zuerst ein Werkzeug auf: '
             '{"tool":{"name":"read_file","arguments":{"path":"hello.txt"}}}. '
-            'Eine fertige Antwort hat die Form {"answer":"Deine Antwort auf Deutsch"}. '
+            'A completed response has the form {"answer":"your response in the user\'s language"}. '
             'Nur EIN Werkzeug pro Antwort. Keine erfundenen Datei-Inhalte oder Erfolge. '
             'TOOL_RESULT enthält das tatsächliche Ergebnis. Nach einer Ablehnung keine Wiederholung. '
             'Führe niemals Code selbst aus. Verfügbare Werkzeuge mit JSON-Schema:\n' + json.dumps(tools, ensure_ascii=False))

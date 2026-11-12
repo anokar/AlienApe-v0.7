@@ -5,11 +5,11 @@ from pathlib import PurePosixPath
 import asyncio,re
 from .completion import CompletionRejected,FailureType as F
 from .security import SensitiveFilePolicy
+from .languages import TEXT_SOURCE_SUFFIXES
 
 IGNORED={'.git','.hg','.svn','node_modules','.venv','venv','__pycache__','.cache','cache','caches',
          'build','dist','.godot','.import','imports','import_cache','target','bin','obj','.next','.nuxt','coverage','.alienape-verification'}
-TEXT_EXTENSIONS={'.gd','.godot','.tscn','.tres','.cfg','.ini','.json','.toml','.yaml','.yml','.py','.md','.txt',
-                 '.js','.ts','.jsx','.tsx','.cs','.csproj','.sln','.rs','.lua','.go','.c','.h','.cpp'}
+TEXT_EXTENSIONS=TEXT_SOURCE_SUFFIXES | frozenset({'.md','.txt','.csproj','.sln','.csv','.log'})
 PRIORITY_NAMES={'project.godot':0,'pyproject.toml':1,'package.json':1,'requirements.txt':1,'cargo.toml':1}
 
 

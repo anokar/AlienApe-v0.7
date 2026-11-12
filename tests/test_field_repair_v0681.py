@@ -100,7 +100,7 @@ def test_reset_is_explicit_saved_only_and_current_values_visible(tmp_path):
     d=SettingsDialog(Settings.load(path));d.show();d.semantic_toggle.setChecked(True);app.processEvents()
     w=d.semantic_widget
     assert w.threshold.value()==.45 and w.margin.value()==.10 and w.timeout.value()==20.0
-    assert 'Gespeichert' in w.saved_values.text() and '20' in w.saved_values.text() and w.reset.isVisible()
+    assert '20' in w.saved_values.text() and w.reset.isVisible()
     w.reset.click();assert (w.threshold.value(),w.margin.value(),w.timeout.value())==(.55,.10,5.0)
     assert path.read_bytes()==before and Settings.load(path).semantic_resolver.confidence_threshold==.45
     d.reject();d2=SettingsDialog(Settings.load(path));assert d2.semantic_widget.threshold.value()==.45

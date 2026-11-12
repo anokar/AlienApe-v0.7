@@ -6,6 +6,7 @@ import asyncio
 import re
 from .backends import create_backend
 from .profiles import ModelProfile
+from .languages import CODE_EXTENSION_PATTERN, LANGUAGE_NAMES
 
 
 class TaskType(StrEnum):
@@ -16,8 +17,8 @@ class TaskType(StrEnum):
     FILE_TASK = "FILE_TASK"
 
 
-CODE_EXTENSIONS = r"py|gd|js|jsx|ts|tsx|cs|cpp|c|h|java|rs|go|lua|html|css|sql|sh|ps1"
-FILE_EXTENSIONS = CODE_EXTENSIONS + r"|godot|tscn|tres|txt|md|json|toml|yaml|yml|csv|log|ini|cfg"
+CODE_EXTENSIONS = CODE_EXTENSION_PATTERN
+FILE_EXTENSIONS = CODE_EXTENSIONS + r"|godot|tscn|tres|txt|md|json|toml|yaml|yml|csv|log|ini|cfg|csproj|sln|gradle|properties|xml|proto|tf|hcl"
 
 
 def referenced_paths(task):
@@ -39,7 +40,8 @@ def classify_task(task):
     lower = task.casefold()
     if lower.strip().startswith("merke dir") or re.search(r"\b(memory|gemerkt|erinnerungen|memorized)\b", lower):
         return TaskType.MEMORY_TASK, "Explizite Memory-Anforderung"
-    if re.search(r"\.(?:" + CODE_EXTENSIONS + r")\b", lower) or re.search(r"\b(code|coding|debug|debugging|bug|funktion|programmiere|programmieren|traceback|refactor|python|godot)\b", lower):
+    language_mention = any(re.search(r"(?<!\w)" + re.escape(name) + r"(?!\w)", lower) for name in LANGUAGE_NAMES)
+    if re.search(r"\.(?:" + CODE_EXTENSIONS + r")\b", lower) or language_mention or re.search(r"\b(code|coding|debug|debugging|bug|funktion|programmiere|programmieren|traceback|refactor|python|godot|programming|implement)\b", lower):
         return TaskType.CODE_TASK, "Code-Datei oder ausdrückliche Programmieraufgabe"
     if re.search(r"\b(plan|plane|planung|strategie|reasoning|durchdenken|abwägen|beweise|beweis|architektur)\b", lower):
         return TaskType.REASONING_TASK, "Explizite Planung oder vertiefte Begründung"

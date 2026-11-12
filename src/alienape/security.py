@@ -88,7 +88,8 @@ class SensitiveFilePolicy:
         if any(p in {'.ssh','.gnupg','.aws','.azure','.kube'} for p in names):return True
         if name=='.env' or name.startswith('.env.') or name in {'id_rsa','id_ed25519','id_dsa','.netrc','.npmrc','.pypirc'}:return True
         if PurePosixPath(name).suffix in {'.pem','.key','.p12','.pfx'}:return True
-        if name.startswith(('credentials','secrets')) and PurePosixPath(name).suffix not in {'.py','.gd','.js','.ts','.cs','.cpp','.h','.rs','.go'}:return True
+        from .languages import SOURCE_SUFFIXES
+        if name.startswith(('credentials','secrets')) and PurePosixPath(name).suffix.casefold() not in SOURCE_SUFFIXES:return True
         return False
     @staticmethod
     def writable(path):
